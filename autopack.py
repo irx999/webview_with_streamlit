@@ -77,7 +77,7 @@ def pack(options: argparse.Namespace) -> None:
         # add streamlit
         pyi_args.extend(["--collect-all", "streamlit"])
         pyi_args.extend(["--copy-metadata", "streamlit"])
-        pyi_args.extend(["--add-data", f"{options.streamlit_script}:."])
+        # pyi_args.extend(["--add-data", f"{options.streamlit_script}:."])
 
         if options.contents_directory:
             pyi_args.extend(["--contents-directory", options.contents_directory])
@@ -135,14 +135,14 @@ if __name__ == "__main__":
 
     options = argparse.Namespace(
         script="main.py",
-        streamlit_script="streamlit_app.py",
+        # streamlit_script="streamlit_app.py",
         icon="app.ico",
         name=name,
         product_name=name,
         non_interactive=True,
         onedir=True,  # 对应 -D 参数
         distpath="dist",
-        add_data=[],
+        add_data=[["src:src"], ["pyproject.toml:pyproject.toml"]],
         add_binary=[],
         hidden_import=[],
         codesign_identity=None,
@@ -166,8 +166,8 @@ if __name__ == "__main__":
 
     pack_path = f"{options.distpath}/{name}/{contents_directory}"
 
-    shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
-    shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
+    # shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
+    # shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
 
     shutil.rmtree("build", ignore_errors=True)
     os.remove("{name}.spec")

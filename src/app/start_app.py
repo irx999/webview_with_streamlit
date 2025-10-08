@@ -21,11 +21,11 @@ def start_fastapi():
 
 
 def get_script_path():
-    script_path = "streamlit_app.py"
+    script_path = "src/ui/streamlit_app.py"
     if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, os.path.basename(script_path))  # type: ignore
+        return os.path.join(sys._MEIPASS, script_path)  # type: ignore
     else:
-        return os.path.join(os.getcwd(), os.path.basename(script_path))
+        return os.path.join(os.getcwd(), script_path)
 
 
 def run_streamlit(script_path: str, options):

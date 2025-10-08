@@ -2,7 +2,7 @@
 from PyInstaller.utils.hooks import collect_all
 from PyInstaller.utils.hooks import copy_metadata
 
-datas = [('streamlit_app.py', '.')]
+datas = [('src', 'src'), ('pyproject.toml', 'pyproject.toml')]
 binaries = []
 hiddenimports = []
 datas += copy_metadata('streamlit')
