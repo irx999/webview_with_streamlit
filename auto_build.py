@@ -200,4 +200,4 @@ if __name__ == "__main__":
 
     delete_build_dir()
 
-    print(f"\n ✅ All Done spend{time.time() - strat_time:.2f}s ")
+    print(f"\n ✅ All Done spend {time.time() - strat_time:.2f} s")

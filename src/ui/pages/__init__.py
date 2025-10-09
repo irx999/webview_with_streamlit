@@ -21,10 +21,7 @@ def get_path(path) -> str:
         return os.path.join(os.getcwd(), path)
 
 
-print("当前工作目录", os.getcwd())
 HP = get_script_path()
-print(f"HP路径 \n {HP}")
-print(f"工作路径 \n {sys.executable}")
 
 
 def st_sidebar():

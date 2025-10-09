@@ -49,7 +49,8 @@ def start_streamlit():
     options["server.port"] = str(port)
     options["server.headless"] = "true"
     options["global.developmentMode"] = "false"
-    options["client.toolbarMode"] = "viewer"
+    # options["client.showErrorDetails"] = "none"
+    options["client.toolbarMode"] = "viewer"  # "minimal or viewer"
 
     import multiprocessing
 

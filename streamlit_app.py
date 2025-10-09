@@ -1,10 +1,16 @@
-import sys
-
 import streamlit as st
 
 from src.ui.pages import PAGES, st_sidebar
 
-st.set_page_config(page_title="ERP-ext", layout="wide", page_icon="🧊")
+st.set_page_config(
+    page_title="My App",
+    layout="wide",
+    page_icon="🧊",
+    initial_sidebar_state="auto",
+    menu_items={
+        "About": "# This is a header. This is an *extremely* cool app!",
+    },
+)
 
 st.logo(
     image="https://irx999.fun/img/tx1.jpg",
@@ -18,8 +24,6 @@ def main():
     st_sidebar()
     pg = st.navigation(pages=PAGES, position="top", expanded=True)
     pg.run()
-
-    print("可执行文件路径", sys.executable)
 
 
 if __name__ == "__main__":
