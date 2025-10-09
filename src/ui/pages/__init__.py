@@ -1,9 +1,30 @@
+import os
+import sys
 from typing import Any
 
 import streamlit as st
 from streamlit import session_state as ss
 
-HP = "./pages/"
+
+def get_script_path() -> str:
+    script_path = "src/ui/pages/"
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, script_path)  # type: ignore
+    else:
+        return os.path.join(os.getcwd(), script_path)
+
+
+def get_path(path) -> str:
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, path)  # type: ignore
+    else:
+        return os.path.join(os.getcwd(), path)
+
+
+print("当前工作目录", os.getcwd())
+HP = get_script_path()
+print(f"HP路径 \n {HP}")
+print(f"工作路径 \n {sys.executable}")
 
 
 def st_sidebar():
@@ -24,7 +45,7 @@ def st_sidebar():
             # on_click=lambda: authenticator.cookie_controller.delete_cookie(),
         )
     columns = st.sidebar.columns([1, 1], vertical_alignment="center")
-    columns[0].image("src/ui/assets/images/©.png", width=150)
+    columns[0].image("https://irx999.fun/img/©.png", width=150)
     columns[1].caption(
         "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
     )

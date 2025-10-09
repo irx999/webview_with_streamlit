@@ -143,6 +143,7 @@ if __name__ == "__main__":
         onedir=True,  # 对应 -D 参数
         distpath="dist",
         add_data=[
+            ["streamlit_app.py:."],
             ["src:src"],
             ["pyproject.toml:pyproject.toml"],
         ],
@@ -153,7 +154,7 @@ if __name__ == "__main__":
         codesign_identity=None,
         bundle_id=None,
         uac_admin=False,
-        debug_console=False,
+        debug_console=True,
         product_version=version,
         file_version=version,
         company_name=None,
@@ -163,26 +164,31 @@ if __name__ == "__main__":
         contents_directory=contents_directory,
     )
 
-    print(f"Building {name} -> {version}\n \n \n")
+    print(f"🌟 Building {name} -> {version}\n \n \n")
     # 构建
     build(options)
+
+    print(f"✅ Build Success {version}  \n \n \n")
 
     import shutil
 
     pack_path = f"{options.distpath}/{name}/{contents_directory}"
 
-    # 打包成压缩文件
-    shutil.make_archive(
-        base_name=f"{options.distpath}/{name}",
-        format="zip",
-        root_dir=f"{options.distpath}/{name}",
-    )
+    # # 打包成压缩文件
+    # print(f"🌟 Compressing  -> {options.distpath}/{name}.zip {version}\n \n \n")
+    # shutil.make_archive(
+    #     base_name=f"{options.distpath}/{name}",
+    #     format="zip",
+    #     root_dir=f"{options.distpath}/{name}",
+    # )
 
     # shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
     # shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
+    print(f"✅ Compress Success {version}")
 
     shutil.rmtree("build", ignore_errors=True)
     try:
         os.remove(f"{name}.spec")
     except FileNotFoundError:
         pass
+    print(f"✅ All Done {version}")

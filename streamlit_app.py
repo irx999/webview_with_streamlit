@@ -1,3 +1,5 @@
+import sys
+
 import streamlit as st
 
 from src.ui.pages import PAGES, st_sidebar
@@ -16,6 +18,8 @@ def main():
     st_sidebar()
     pg = st.navigation(pages=PAGES, position="top", expanded=True)
     pg.run()
+
+    print("可执行文件路径", sys.executable)
 
 
 if __name__ == "__main__":
