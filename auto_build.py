@@ -123,7 +123,11 @@ def build(options: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
+    import time
+
     import toml
+
+    strat_time = time.time()
 
     pyproject_info = toml.load("pyproject.toml")
 
@@ -164,31 +168,36 @@ if __name__ == "__main__":
         contents_directory=contents_directory,
     )
 
-    print(f"🌟 Building {name} -> {version}\n \n \n")
-    # 构建
-    build(options)
-
-    print(f"✅ Build Success {version}  \n \n \n")
-
     import shutil
 
     pack_path = f"{options.distpath}/{name}/{contents_directory}"
-
-    # # 打包成压缩文件
-    # print(f"🌟 Compressing  -> {options.distpath}/{name}.zip {version}\n \n \n")
-    # shutil.make_archive(
-    #     base_name=f"{options.distpath}/{name}",
-    #     format="zip",
-    #     root_dir=f"{options.distpath}/{name}",
-    # )
-
     # shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
     # shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
-    print(f"✅ Compress Success {version}")
 
-    shutil.rmtree("build", ignore_errors=True)
-    try:
-        os.remove(f"{name}.spec")
-    except FileNotFoundError:
-        pass
-    print(f"✅ All Done {version}")
+    def compress():
+        print(f"\n 🌟 Compressing  -> {options.distpath}/{name}.zip {version} \n")
+        shutil.make_archive(
+            base_name=f"{options.distpath}/{name}",
+            format="zip",
+            root_dir=f"{options.distpath}/{name}",
+        )
+        print(f"\n ✅ Compress Success {version}  \n")
+
+    def delete_build_dir():
+        try:
+            shutil.rmtree("build", ignore_errors=True)
+            os.remove(f"{name}.spec")
+        except FileNotFoundError:
+            pass
+
+    print(f"\n 🌟 Building {name} -> {version} \n")
+    # 构建
+    build(options)
+
+    print(f"\n ✅ Build Success {version} \n")
+
+    compress()
+
+    delete_build_dir()
+
+    print(f"\n ✅ All Done spend{time.time() - strat_time:.2f}s ")

@@ -9,7 +9,7 @@ st.set_page_config(page_title="ERP-ext", layout="wide", page_icon="🧊")
 st.logo(
     image="https://irx999.fun/img/tx1.jpg",
     link="https://irx999.fun/",
-    # icon_image="https://irx999.fun/img/tx1.jpg",
+    icon_image="https://irx999.fun/img/tx1.jpg",
 )
 
 

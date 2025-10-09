@@ -8,3 +8,6 @@ if __name__ == "__main__":
 
         df = pd.DataFrame(xw.sheets.active.api.Application.Selection.Value)
         st.write(df)
+
+    if st.button("获取当前选择区域值"):
+        st.file_uploader("上传文件", type=["xlsx", "xls"])

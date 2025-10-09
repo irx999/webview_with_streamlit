@@ -65,16 +65,17 @@ def start_streamlit():
 
 
 def start_webview():
-    """启动webvie服务器"""
+    """启动webview服务器"""
 
     window = webview.create_window(
-        "title",
+        "My_app",
         f"http://localhost:{8501}",
         width=1200,
         height=800,
         min_size=(1200, 800),
-        x=1440,
-        y=720,
+        shadow=True,
+        # x=0,
+        # y=0,
     )
     webview.start()
 
