@@ -73,6 +73,8 @@ def start_webview():
         width=1200,
         height=800,
         min_size=(1200, 800),
+        x=1440,
+        y=720,
     )
     webview.start()
 

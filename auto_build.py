@@ -29,7 +29,7 @@ import shutil
 import sys
 
 
-def pack(options: argparse.Namespace) -> None:
+def build(options: argparse.Namespace) -> None:
     # is_dir_not_empty = lambda dir: os.path.isdir(dir) and len(os.listdir(dir)) != 0
     def is_dir_not_empty(dir: str) -> bool:
         """Check if a directory is not empty."""
@@ -142,9 +142,14 @@ if __name__ == "__main__":
         non_interactive=True,
         onedir=True,  # 对应 -D 参数
         distpath="dist",
-        add_data=[["src:src"], ["pyproject.toml:pyproject.toml"]],
+        add_data=[
+            ["src:src"],
+            ["pyproject.toml:pyproject.toml"],
+        ],
         add_binary=[],
-        hidden_import=[],
+        hidden_import=[
+            ["xlwings"],
+        ],
         codesign_identity=None,
         bundle_id=None,
         uac_admin=False,
@@ -158,16 +163,26 @@ if __name__ == "__main__":
         contents_directory=contents_directory,
     )
 
-    print(f"Packing {name} -> {version}\n \n \n")
-
-    pack(options)
+    print(f"Building {name} -> {version}\n \n \n")
+    # 构建
+    build(options)
 
     import shutil
 
     pack_path = f"{options.distpath}/{name}/{contents_directory}"
 
+    # 打包成压缩文件
+    shutil.make_archive(
+        base_name=f"{options.distpath}/{name}",
+        format="zip",
+        root_dir=f"{options.distpath}/{name}",
+    )
+
     # shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
     # shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
 
     shutil.rmtree("build", ignore_errors=True)
-    os.remove("{name}.spec")
+    try:
+        os.remove(f"{name}.spec")
+    except FileNotFoundError:
+        pass
