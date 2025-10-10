@@ -148,7 +148,9 @@ if __name__ == "__main__":
         distpath="dist",
         add_data=[
             ["streamlit_app.py:."],
-            ["src:src"],
+            # ["src:src"],
+            ["src/ui:src/ui"],
+            ["assets:assets"],
             ["pyproject.toml:pyproject.toml"],
         ],
         add_binary=[],
@@ -196,7 +198,7 @@ if __name__ == "__main__":
 
     print(f"\n ✅ Build Success {version} \n")
 
-    compress()
+    # compress()
 
     delete_build_dir()
 

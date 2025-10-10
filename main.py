@@ -25,6 +25,6 @@ if __name__ == "__main__":
         main_working_dir = getattr(sys, "_MEIPASS", os.path.abspath(__file__))
         # 现在的方案
         main_working_dir = os.path.dirname(sys.executable)
-        os.chdir(main_working_dir)
+        # os.chdir(main_working_dir)
 
     main()
