@@ -31,8 +31,6 @@ def main():
         streamlit_app.terminate()
         streamlit_app.join()
 
-        fastapi_app.join()
-
         webview_app.destroy()
         sys.exit()
 

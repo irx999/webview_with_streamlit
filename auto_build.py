@@ -182,14 +182,6 @@ if __name__ == "__main__":
     # shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
     # shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
 
-    def copy_file():
-        """复制文件"""
-        try:
-            print("\n 🌟 Copy file -> dist \n")
-            shutil.copytree("assets", f"{pack_path}/assets", dirs_exist_ok=True)
-        except Exception as e:
-            print(f"\n ❌️ Failing... {e}.")
-
     def delete_build_file():
         """删除 build & spec"""
         try:
@@ -199,24 +191,10 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"\n ❌️ Failing... {e}.")
 
-    def compress():
-        """压缩文件"""
-        try:
-            print(f"\n 🌟 Compressing  -> {options.distpath}/{name}.zip {version} \n")
-            shutil.make_archive(
-                base_name=f"{options.distpath}/{name}",
-                format="zip",
-                root_dir=f"{options.distpath}/{name}",
-            )
-            file_size = os.path.getsize(f"{options.distpath}/{name}.zip")
-            print(f"\n ✅ Compress Success {file_size / (1024 * 1024):.2f} MB  \n")
-        except Exception as e:
-            print(f"\n ❌️ Failing... {e}.")
-
     def generating_file_information() -> None:
         """生成文件信息"""
         try:
-            print(f"\n 🌟 Generating_latest.json -> {pack_path}/latest.json \n")
+            print(f"\n 🌟 Generating_latest.json -> {options.distpath}/latest.json \n")
             info = {
                 "name": name,
                 "version": f"{version}+auto_build.{time.time()}",
@@ -228,22 +206,49 @@ if __name__ == "__main__":
                     }
                 },
             }
-            with open(f"{pack_path}/latest.json", "w") as f:
+            with open(f"{options.distpath}/latest.json", "w") as f:
                 f.write(json.dumps(info, indent=4))
+        except Exception as e:
+            print(f"\n ❌️ Failing... {e}.")
+
+    def copy_file():
+        """复制文件"""
+        try:
+            print("\n 🌟 Copy file -> dist \n")
+            shutil.copytree("assets", f"{pack_path}/assets", dirs_exist_ok=True)
+            shutil.copy(
+                f"{options.distpath}/latest.json",
+                f"{pack_path}/{contents_directory}/latest.json",
+            )
+        except Exception as e:
+            print(f"\n ❌️ Failing... {e}.")
+
+    def compress():
+        """压缩文件"""
+        try:
+            file_name = f"{options.distpath}/{name}-{version}"
+            print(f"\n 🌟 Compressing  -> {file_name}.zip \n")
+            shutil.make_archive(
+                base_name=file_name,
+                format="zip",
+                root_dir=f"{options.distpath}/{name}",
+            )
+            file_size = os.path.getsize(f"{file_name}.zip")
+            print(f"\n ✅ Compress Success {file_size / (1024 * 1024):.2f} MB  \n")
         except Exception as e:
             print(f"\n ❌️ Failing... {e}.")
 
     # 构建
     build(options)
 
-    # 复制文件
-    copy_file()
-
     # 删除构建文件
     delete_build_file()
 
     # 生成文件信息
     generating_file_information()
+
+    # 复制文件
+    copy_file()
 
     # 压缩
     compress()
