@@ -1,34 +1,20 @@
+import multiprocessing
 import os
 import sys
+import threading
 
 import webview
 
 
-def start_fastapi():
-    """启动Fastapi服务器"""
-    from src.fast_api.fastapi_app import app
-
-    def run():
-        import uvicorn
-
-        uvicorn.run(app, host="localhost", port=8000, log_level="warning")
-
-    import threading
-
-    fastapi_thread = threading.Thread(target=run, daemon=True, name="Fastapi_app")
-    fastapi_thread.start()
-    return fastapi_thread
-
-
-def get_script_path():
-    script_path = "streamlit_app.py"
+def get_script_path() -> str:
+    script_path = "src/ui/streamlit_app.py"
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, script_path)  # type: ignore
     else:
         return os.path.join(os.getcwd(), script_path)
 
 
-def run_streamlit(script_path: str, options):
+def run_streamlit(script_path: str, options) -> None:
     from streamlit.web import cli as stcli
 
     """启动Streamlit服务器"""
@@ -38,7 +24,7 @@ def run_streamlit(script_path: str, options):
     stcli.main()
 
 
-def start_streamlit():
+def start_streamlit() -> multiprocessing.Process:
     """启动Streamlit服务器"""
 
     """在单独的线程中启动Streamlit服务器"""
@@ -52,8 +38,6 @@ def start_streamlit():
     # options["client.showErrorDetails"] = "none"
     options["client.toolbarMode"] = "viewer"  # "minimal or viewer"
 
-    import multiprocessing
-
     multiprocessing.freeze_support()
     streamlit_process = multiprocessing.Process(
         target=run_streamlit,
@@ -65,7 +49,21 @@ def start_streamlit():
     return streamlit_process
 
 
-def start_webview():
+def start_fastapi() -> threading.Thread:
+    """启动Fastapi服务器"""
+    from src.fast_api.fastapi_app import app
+
+    def run():
+        import uvicorn
+
+        uvicorn.run(app, host="localhost", port=8000, log_level="warning")
+
+    fastapi_thread = threading.Thread(target=run, daemon=True, name="Fastapi_app")
+    fastapi_thread.start()
+    return fastapi_thread
+
+
+def start_webview() -> webview.Window:
     """启动webview服务器"""
 
     window = webview.create_window(
@@ -78,6 +76,5 @@ def start_webview():
         # x=0,
         # y=0,
     )
-    webview.start()
 
-    return window
+    return window  # type: ignore

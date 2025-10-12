@@ -154,8 +154,8 @@ if __name__ == "__main__":
         onedir=True,  # 对应 -D 参数
         distpath="dist",
         add_data=[
-            ["streamlit_app.py:."],
-            # ["src:src"],
+            # ["streamlit_app.py:."],
+            ["src:src"],
             ["src/ui:src/ui"],
             ["pyproject.toml:pyproject.toml"],
         ],
