@@ -1,96 +1,108 @@
-# WebView 应用
+# WebView with Streamlit Desktop Application
 
-这是一个使用 Python、Streamlit 和 pywebview 创建的桌面应用程序示例。
+这是一个基于 Python 的桌面应用程序示例，它结合了 Streamlit 作为前端界面框架和 pywebview 将 Web 应用封装为原生桌面窗口应用，实现了跨平台的轻量级 GUI 桌面应用开发。
 
-## 功能
+## 🌟 项目特点
 
-- 使用Streamlit作为前端框架
-- 通过pywebview包装为桌面应用
-- 包含基本的交互元素
+- 使用 Streamlit 构建现代化 Web 界面
+- 通过 pywebview 将 Web 应用封装为桌面应用
+- 集成 FastAPI 后端服务
+- 支持打包为独立的可执行文件
+- 跨平台支持 (Windows/macOS/Linux)
 
-## 安装
+## 🏗️ 技术架构
 
-```bash
-pip install -e .
-```
+- **前端**: Streamlit + HTML/CSS/JavaScript
+- **后端**: FastAPI
+- **桌面封装**: pywebview
+- **打包工具**: PyInstaller
+- **项目管理**: pyproject.toml
 
-要安装开发依赖（如 PyInstaller）:
+## 🚀 快速开始
 
-```bash
-pip install -e .[dev]
-```
-
-## 运行
-
-```bash
-python main.py
-```
-
-## 直接运行Streamlit应用
+### 安装依赖
 
 ```bash
-streamlit run app.py
+# 创建虚拟环境（推荐）
+uv sync
 ```
 
-## 打包为可执行文件（使用 PyInstaller）
+### 开发模式运行
 
 ```bash
-pyinstaller --onefile --windowed main.py
+uv run main.py
 ```
 
-## 文件结构
+这将启动三个组件：
+1. Streamlit 服务 (端口 8501)
+2. FastAPI 服务 (端口 8000)
+3. WebView 窗口显示应用界面
 
-- `main.py`: 主程序文件，使用pywebview包装Streamlit应用
-- `app.py`: Streamlit应用文件
-- `pyproject.toml`: 项目配置和依赖
-```
-
-```
-# webview
-
-一个使用pywebview和Streamlit构建的桌面应用示例。
-
-## 项目结构
-
-- [main.py](file:///c%3A/Users/irx999/Desktop/git-rep/webview/main.py): 主程序，启动Streamlit服务器并使用pywebview显示
-- [app.py](file:///c%3A/Users/irx999/Desktop/git-rep/webview/app.py): Streamlit应用程序
-
-## 安装依赖
+### 打包为可执行文件
 
 ```bash
-pip install -e .
+# 安装开发依赖
+uv run  auto_build.py
+
+# 将自动使用 PyInstaller 打包
 ```
 
-## 运行应用
+打包后的可执行文件位于 `dist/` 目录中。
 
-```bash
-python [main.py](file:///c%3A/Users/irx999/Desktop/git-rep/webview/main.py)
+## 📁 项目结构
+
+```
+.
+├── main.py                 # 应用主入口
+├── streamlit_app.py        # Streamlit 应用主文件
+├── pyproject.toml          # 项目配置文件
+├── webview.spec            # PyInstaller 打包配置
+├── src/
+│   ├── app/
+│   │   └── start_app.py    # 应用启动逻辑
+│   ├── fast_api/           # FastAPI 后端服务
+│   │   ├── fastapi_app.py
+│   │   └── api/v1/
+│   ├── ui/                 # Streamlit UI 组件
+│   │   ├── sidebar.py
+│   │   └── pages/
+│   └── test/
+├── assets/                 # 静态资源文件
+└── logs/                   # 日志目录
 ```
 
-## 打包应用
+## 🧩 功能模块
 
-使用PyInstaller进行打包:
+### 主要页面
 
-```bash
-pyinstaller webview.spec
-```
+1. **主页** - 欢迎页面
+2. **功能测试** - 测试页面集合
 
-打包后的可执行文件将位于 `dist` 目录中。
+### 核心功能
 
-注意: 由于应用通过subprocess启动Streamlit服务器，所以需要使用spec文件明确指定所有依赖项，以确保PyInstaller能正确打包所有必要的模块。
+- 用户认证状态显示
+- 缓存管理
+- 窗口大小调整 API
+- 多页面导航
 
-## 打包后运行
+## ⚙️ 配置说明
 
-打包后的应用会自动处理Streamlit服务器的启动和停止，无需额外操作。可执行文件将包含所有必要的依赖项，可以在没有Python环境的机器上运行。
+应用使用以下端口：
+- Streamlit: 8501
+- FastAPI: 8000
 
+## 🛠️ 开发指南
 
+### 添加新页面
 
+1. 在 `src/ui/pages/` 下创建新的目录
+2. 添加页面文件（如 `new_page.py`）
+3. 在 `src/ui/pages/__init__.py` 的 [PAGES](file://c:\Users\irx999\Desktop\git\webview_with_streamlit\src\ui\pages\__init__.py#L51-L70) 字典中注册新页面
 
-datas = [(r".venv\Lib\site-packages\streamlit\runtime","./streamlit/runtime")]
-datas += collect_data_files("streamlit")
-datas += copy_metadata("streamlit")
+### 添加新的 API
 
+1. 在 `src/fast_api/api/v1/` 下创建新的模块
+2. 在 `src/fast_api/api/v1/main.py` 中引入并注册路由
 
-datas += [('./streamlit_app.py', '.')]
+## 📄 许可证
 
-block_cipher = None

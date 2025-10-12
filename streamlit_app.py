@@ -1,6 +1,7 @@
 import streamlit as st
 
-from src.ui.pages import PAGES, st_sidebar
+from src.ui.pages import PAGES
+from src.ui.sidebar import st_sidebar
 
 st.set_page_config(
     page_title="My App",

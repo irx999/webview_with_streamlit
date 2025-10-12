@@ -24,6 +24,8 @@ PyInstaller.__main__.run(args)
 """
 
 import argparse
+import datetime
+import json
 import os
 import shutil
 import sys
@@ -114,8 +116,13 @@ def build(options: argparse.Namespace) -> None:
                 pyi_args.extend(pyinstaller_build_arg_arr)
 
         # run PyInstaller!
+        print(f"\n 🌟 Building {name} -> {version} \n")
+
         print("Running PyInstaller:", pyi_args)
+
         PyInstaller.__main__.run(pyi_args)
+
+        print(f"\n ✅ Build Success {options.distpath}/{name}  \n")
 
     except ImportError as e:
         print("Please install PyInstaller module to use flet pack command:", e)
@@ -140,7 +147,7 @@ if __name__ == "__main__":
     options = argparse.Namespace(
         script="main.py",
         # streamlit_script="streamlit_app.py",
-        icon="app.ico",
+        icon="assets/app.ico",
         name=name,
         product_name=name,
         non_interactive=True,
@@ -150,7 +157,6 @@ if __name__ == "__main__":
             ["streamlit_app.py:."],
             # ["src:src"],
             ["src/ui:src/ui"],
-            ["assets:assets"],
             ["pyproject.toml:pyproject.toml"],
         ],
         add_binary=[],
@@ -172,34 +178,74 @@ if __name__ == "__main__":
 
     import shutil
 
-    pack_path = f"{options.distpath}/{name}/{contents_directory}"
+    pack_path = f"{options.distpath}/{name}"
     # shutil.copy("pyproject.toml", f"{pack_path}/pyproject.toml")
     # shutil.copytree("src", f"{pack_path}/src", dirs_exist_ok=True)
 
-    def compress():
-        print(f"\n 🌟 Compressing  -> {options.distpath}/{name}.zip {version} \n")
-        shutil.make_archive(
-            base_name=f"{options.distpath}/{name}",
-            format="zip",
-            root_dir=f"{options.distpath}/{name}",
-        )
-        print(f"\n ✅ Compress Success {version}  \n")
-
-    def delete_build_dir():
+    def copy_file():
+        """复制文件"""
         try:
+            print("\n 🌟 Copy file -> dist \n")
+            shutil.copytree("assets", f"{pack_path}/assets", dirs_exist_ok=True)
+        except Exception as e:
+            print(f"\n ❌️ Failing... {e}.")
+
+    def delete_build_file():
+        """删除 build & spec"""
+        try:
+            print("\n 🌟 Delete build & spec \n")
             shutil.rmtree("build", ignore_errors=True)
             os.remove(f"{name}.spec")
-        except FileNotFoundError:
-            pass
+        except Exception as e:
+            print(f"\n ❌️ Failing... {e}.")
 
-    print(f"\n 🌟 Building {name} -> {version} \n")
+    def compress():
+        """压缩文件"""
+        try:
+            print(f"\n 🌟 Compressing  -> {options.distpath}/{name}.zip {version} \n")
+            shutil.make_archive(
+                base_name=f"{options.distpath}/{name}",
+                format="zip",
+                root_dir=f"{options.distpath}/{name}",
+            )
+            file_size = os.path.getsize(f"{options.distpath}/{name}.zip")
+            print(f"\n ✅ Compress Success {file_size / (1024 * 1024):.2f} MB  \n")
+        except Exception as e:
+            print(f"\n ❌️ Failing... {e}.")
+
+    def generating_file_information() -> None:
+        """生成文件信息"""
+        try:
+            print(f"\n 🌟 Generating_latest.json -> {pack_path}/latest.json \n")
+            info = {
+                "name": name,
+                "version": f"{version}+auto_build.{time.time()}",
+                "pub_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "platforms": {
+                    "windows-x86_64": {
+                        "signature": "",
+                        "url": "",
+                    }
+                },
+            }
+            with open(f"{pack_path}/latest.json", "w") as f:
+                f.write(json.dumps(info, indent=4))
+        except Exception as e:
+            print(f"\n ❌️ Failing... {e}.")
+
     # 构建
     build(options)
 
-    print(f"\n ✅ Build Success {version} \n")
+    # 复制文件
+    copy_file()
 
-    # compress()
+    # 删除构建文件
+    delete_build_file()
 
-    delete_build_dir()
+    # 生成文件信息
+    generating_file_information()
+
+    # 压缩
+    compress()
 
     print(f"\n ✅ All Done spend {time.time() - strat_time:.2f} s")
