@@ -147,7 +147,7 @@ if __name__ == "__main__":
     options = argparse.Namespace(
         script="main.py",
         # streamlit_script="streamlit_app.py",
-        icon="assets/app.ico",
+        icon="assets//ico/app.ico",
         name=name,
         product_name=name,
         non_interactive=True,
@@ -218,7 +218,7 @@ if __name__ == "__main__":
             shutil.copytree("assets", f"{pack_path}/assets", dirs_exist_ok=True)
             shutil.copy(
                 f"{options.distpath}/latest.json",
-                f"{pack_path}/{contents_directory}/latest.json",
+                f"{pack_path}/assets/latest.json",
             )
         except Exception as e:
             print(f"\n ❌️ Failing... {e}.")
