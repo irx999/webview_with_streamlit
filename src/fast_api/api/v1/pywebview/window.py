@@ -10,7 +10,8 @@ router = APIRouter(
 
 @router.get("/resize")
 def resize_window(
-    width: int = Query(800, ge=100, le=5000), height: int = Query(600, ge=100, le=5000)
+    width: int = Query(800, ge=800, le=2560),
+    height: int = Query(600, ge=600, le=1440),
 ):
     # global window
 

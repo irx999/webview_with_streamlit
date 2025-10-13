@@ -118,7 +118,7 @@ def build(options: argparse.Namespace) -> None:
         # run PyInstaller!
         print(f"\n 🌟 Building {name} -> {version} \n")
 
-        print("Running PyInstaller:", pyi_args)
+        print(f"\n 💐 Running PyInstaller:{pyi_args} \n")
 
         PyInstaller.__main__.run(pyi_args)
 

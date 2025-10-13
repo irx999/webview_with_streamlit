@@ -18,7 +18,7 @@ def main():
         logger.info(f"✅ Start succes -> {fastapi_app.name}")
 
         webview_app = start_webview()
-        logger.info(f"✅ Start succes -> {webview_app.title}")
+        logger.info(f"✅ Start succes -> {webview_app.name}")  # type: ignore #
 
         logger.info(f"🌟 Starting -> {webview.__name__}")
         webview.start()

@@ -71,10 +71,11 @@ def start_webview() -> webview.Window:
         f"http://localhost:{8501}",
         width=1200,
         height=800,
-        min_size=(1200, 800),
+        # min_size=(1200, 800),
         shadow=True,
         # x=0,
         # y=0,
     )
+    window.name = "webview_app"  # type: ignore #
 
     return window  # type: ignore
