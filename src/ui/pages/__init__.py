@@ -68,4 +68,11 @@ PAGES: dict[str, list[Any]] = {
             icon="🧪",
         ),
     ],
+    "Pywebview": [
+        st.Page(
+            HP + "pywebview/window.py",
+            title="window",
+            icon="🧪",
+        ),
+    ],
 }

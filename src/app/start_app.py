@@ -51,12 +51,20 @@ def start_streamlit() -> multiprocessing.Process:
 
 def start_fastapi() -> threading.Thread:
     """启动Fastapi服务器"""
-    from src.fast_api.fastapi_app import app
 
     def run():
         import uvicorn
 
-        uvicorn.run(app, host="localhost", port=8000, log_level="warning")
+        from src.fast_api.fastapi_app import app
+
+        # 使用导入字符串而不是应用实例，以支持重载功能
+        uvicorn.run(
+            app,
+            host="localhost",
+            port=48000,
+            log_level="warning",
+            # reload=True,
+        )
 
     fastapi_thread = threading.Thread(target=run, daemon=True, name="Fastapi_app")
     fastapi_thread.start()
@@ -73,6 +81,7 @@ def start_webview() -> webview.Window:
         height=800,
         # min_size=(1200, 800),
         shadow=True,
+        on_top=False,
         # x=0,
         # y=0,
     )
