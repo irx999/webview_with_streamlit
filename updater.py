@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import subprocess
 
 import requests
 import webview
@@ -195,11 +194,22 @@ class Updater:
         self.extract_folder_path = os.path.join(
             self.temp_path, self.file_name.rsplit(".", 1)[0]
         )
+        self.cover_folder_path = os.getcwd()
+        self.delete_file_path_list = [
+            "assets",
+            "app-0.0.1",
+            "My_App.exe",
+        ]
 
         self.release_info = {}
 
     def get_release_info(self):
         logger.info("🌟 获取最新版本信息...")
+        if os.path.exists("assets/latest.json"):
+            with open("assets/latest.json", "r", encoding="utf-8") as file:
+                self.release_info = json.load(file)
+                return
+
         for url in self.api_urls:
             lastst_info = requests.get(url)
             if lastst_info.status_code == 200:
@@ -209,8 +219,8 @@ class Updater:
 
     def get_local_version(self):
         logger.info("🌟 获取本地版本信息...")
-        if os.path.exists("./assets/lastest.json"):
-            with open("./assets/lastest.json", "r", encoding="utf-8") as file:
+        if os.path.exists("./assets/latest.json"):
+            with open("./assets/latest.json", "r", encoding="utf-8") as file:
                 return json.load(file)["version"]
         logger.error("❌ 本地信息不存在 将返回0.0.0")
         return "0.0.0"
@@ -236,7 +246,6 @@ class Updater:
                     file.write(response.content)
         except Exception as e:
             logger.error(f"下载失败: {e}")
-            input("按回车键重新下载. . .")
             if os.path.exists(self.download_file_path):
                 os.remove(self.download_file_path)
 
@@ -245,19 +254,8 @@ class Updater:
         while True:
             try:
                 logger.info("🌟 开始解压...")
-                if os.path.exists(self.exe_path):
-                    subprocess.run(
-                        [
-                            self.exe_path,
-                            "x",
-                            self.download_file_path,
-                            f"-o{self.temp_path}",
-                            "-aoa",
-                        ],
-                        check=True,
-                    )
-                else:
-                    shutil.unpack_archive(self.download_file_path, self.temp_path)
+
+                shutil.unpack_archive(self.download_file_path, self.temp_path)
                 logger.info(f"解压完成: {self.extract_folder_path}")
                 return True
             except Exception as e:
@@ -267,21 +265,11 @@ class Updater:
                     os.remove(self.download_file_path)
                 return False
 
-    def cover_folder(self):
-        """覆盖安装最新版本的文件。"""
-        try:
-            logger.info("开始覆盖...")
-            if "full" in self.file_name and os.path.exists(self.delete_folder_path):
-                shutil.rmtree(self.delete_folder_path)
-            shutil.copytree(
-                self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True
-            )
-            logger.info(f"覆盖完成: {green(self.cover_folder_path)}")
-            break
-        except Exception as e:
-            logger.error(f"覆盖失败: {red(e)}")
-
     def terminate_processes(self):
+        pass
+
+    """
+    
         logger.info("开始终止进程...")
         for proc in psutil.process_iter(attrs=["pid", "name"]):
             if proc.info["name"] in self.process_names:
@@ -295,6 +283,19 @@ class Updater:
                 ):
                     pass
         logger.info("终止进程完成")
+    """
+
+    def cover_folder(self):
+        """覆盖安装最新版本的文件。"""
+        try:
+            logger.info("开始覆盖...")
+
+            shutil.copytree(
+                self.extract_folder_path, self.cover_folder_path, dirs_exist_ok=True
+            )
+            logger.info(f"覆盖完成: {self.cover_folder_path}")
+        except Exception as e:
+            logger.error(f"覆盖失败:{e}")
 
     def cleanup(self):
         """清理下载和解压的临时文件。"""
@@ -309,19 +310,27 @@ class Updater:
 
     def run(self):
         """运行更新流程。"""
-        try:
+        # 获取最新版本信息
+        self.get_release_info()
+        # 比较版本
+        if self.compare_versions():
+            # 下载文件
+            self.download_file()
+            # 解压文件
             self.extract_file()
-            self.terminate_processes()
+            # 覆盖安装
             self.cover_folder()
+            # 清理临时文件
             self.cleanup()
-            return True
-        except Exception as e:
-            logger.error(f"更新过程中出现错误: {e}")
-            return False
 
 
 # 创建API类用于前端交互
 class UpdaterApi:
+    pass
+    """
+    API类用于处理前端交互。
+    
+
     def __init__(self):
         self.updater = None
         self.latest_version_info = None
@@ -360,6 +369,7 @@ class UpdaterApi:
         except Exception as e:
             logger.error(f"开始更新时出错: {e}")
             return {"success": False, "error": str(e)}
+    """
 
 
 def main():
@@ -379,5 +389,11 @@ def main():
     webview.start(debug=False)
 
 
+def _main():
+    pass
+
+
 if __name__ == "__main__":
-    main()
+    updater = Updater()
+
+    updater.run()
