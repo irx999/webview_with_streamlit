@@ -31,7 +31,7 @@ import shutil
 import sys
 
 
-class AutoBuild:
+class AutoBuild_main_app:
     @staticmethod
     def build(options: argparse.Namespace) -> None:
         # is_dir_not_empty = lambda dir: os.path.isdir(dir) and len(os.listdir(dir)) != 0
@@ -243,7 +243,7 @@ class AutoBuild:
                 print(f"\n ❌️ Failing... {e}.")
 
         # 构建
-        AutoBuild.build(options)
+        AutoBuild_main_app.build(options)
 
         # 删除构建文件
         delete_build_file()
@@ -260,5 +260,37 @@ class AutoBuild:
         print(f"\n ✅ All Done spend {time.time() - strat_time:.2f} s")
 
 
+class AutoBuild_update_app:
+    @staticmethod
+    def build(options):
+        import PyInstaller.__main__
+
+        pyi_args = [options.script, "--noconfirm"]
+
+        if options.icon:
+            pyi_args.extend(["--icon", options.icon])
+        if options.name:
+            pyi_args.extend(["--name", options.name])
+        if options.distpath:
+            pyi_args.extend(["--distpath", options.distpath])
+        PyInstaller.__main__.run(pyi_args)
+
+    @staticmethod
+    def main():
+        name = "updater"
+        version = "0.0.1"
+        options = argparse.Namespace(
+            script="/updater.py",
+            icon="assets/ico/app.ico",
+            name=name,
+            product_name=name,
+            version=version,
+            non_interactive=True,
+            onedir=False,  # 对应 -D 参数
+            distpath="dist",
+        )
+        AutoBuild_update_app.build(options)
+
+
 if __name__ == "__main__":
-    AutoBuild.main()
+    AutoBuild_main_app.main()
