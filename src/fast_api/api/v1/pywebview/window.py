@@ -14,7 +14,6 @@ async def resize_window_get(
     property: str = Query(),
 ):
     # global window
-    print(property)
     try:
         window: Window = webview.windows[0]
         if window is None:
@@ -35,7 +34,6 @@ async def resize_window_get(
 async def resize_window_post(
     data: dict = Body(...),
 ):
-    # global window
     try:
         window: Window = webview.windows[0]
         if window is None:

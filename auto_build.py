@@ -293,4 +293,11 @@ class AutoBuild_update_app:
 
 
 if __name__ == "__main__":
-    AutoBuild_main_app.main()
+    mode = input("Plese input mode: \n 1🌟: main \n 2🌟: update \n")
+    match mode:
+        case "" | None:
+            sys.exit()
+        case "1":
+            AutoBuild_main_app.main()
+        case "2":
+            AutoBuild_update_app.main()
