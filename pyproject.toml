@@ -3,18 +3,22 @@ name = "My_app"
 version = "0.0.1"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = "==3.13.*"
 dependencies = [
-    "fastapi>=0.118.1",
+    "fastapi>=0.124.2",
     "loguru>=0.7.3",
-    "pywebview>=6.0",
+    "pywebview>=6.1",
     "requests>=2.32.5",
-    "streamlit>=1.50.0",
-    "uvicorn>=0.37.0",
-    "xlwings>=0.33.15",
+    "streamlit>=1.52.0",
+    "streamlit-cookies-controller>=0.0.4",
+    "uvicorn>=0.38.0",
+    "xlwings>=0.33.17",
 ]
 
 [dependency-groups]
 dev = [
-    "pyinstaller>=6.16.0",
+    "pyinstaller>=6.17.0",
 ]
+[[tool.uv.index]]
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+default = true

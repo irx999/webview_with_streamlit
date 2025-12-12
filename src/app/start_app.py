@@ -86,5 +86,6 @@ def start_webview() -> webview.Window:
         # y=0,
     )
     window.name = "webview_app"  # type: ignore #
+    webview.start(debug=True)
 
     return window  # type: ignore

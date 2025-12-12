@@ -280,7 +280,7 @@ class AutoBuild_update_app:
         name = "updater"
         version = "0.0.1"
         options = argparse.Namespace(
-            script="/updater.py",
+            script="updater.py",
             icon="assets/ico/app.ico",
             name=name,
             product_name=name,
@@ -293,7 +293,7 @@ class AutoBuild_update_app:
 
 
 if __name__ == "__main__":
-    mode = input("Plese input mode: \n 1🌟: main \n 2🌟: update \n")
+    mode = input("Plese input mode: \n 1   🌟: main \n 2   🌟: update \n")
     match mode:
         case "" | None:
             sys.exit()
