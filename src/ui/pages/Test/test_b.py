@@ -9,5 +9,4 @@ if __name__ == "__main__":
 
         st.write(pd.DataFrame(get_range()))
 
-    if st.button("获取当前选择区域值"):
-        st.file_uploader("上传文件", type=["xlsx", "xls"])
+    st.file_uploader("上传文件", type=["xlsx", "xls"])

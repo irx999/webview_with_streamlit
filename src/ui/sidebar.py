@@ -1,8 +1,9 @@
 import streamlit as st
 from streamlit import session_state as ss
-from streamlit_cookies_controller import CookieController
 
-controller = CookieController(key="cookies")
+# from streamlit_cookies_controller import CookieController
+
+# controller = CookieController(key="cookies")
 
 
 def st_sidebar():
@@ -27,7 +28,7 @@ def st_sidebar():
         st.button(
             "⚙️Delete_cookie",
             # on_click=lambda: authenticator.cookie_controller.delete_cookie(),
-            on_click=lambda: controller.remove("cookies"),
+            # on_click=lambda: controller.remove("cookies"),
         )
     columns = st.sidebar.columns([1, 1], vertical_alignment="center")
     columns[0].image("assets//images/©.png", width=150)

@@ -208,7 +208,7 @@ class AutoBuild_main_app:
                     "version": f"{version}+auto_build.{time.time()}",
                     "pub_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "download_url": "",
-                    "update_info": "🌟 This is an auto build version",
+                    "update_info": "This is an auto build version",
                 }
                 with open(f"{options.distpath}/latest.json", "w") as f:
                     f.write(json.dumps(info, indent=4))
