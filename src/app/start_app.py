@@ -5,6 +5,10 @@ import threading
 
 import webview
 
+from .app_info import AppInfo
+
+latest_info = AppInfo.get_latest_info()
+
 
 def get_script_path() -> str:
     script_path = "src/ui/streamlit_app.py"
@@ -75,7 +79,7 @@ def start_webview() -> webview.Window:
     """启动webview服务器"""
 
     window = webview.create_window(
-        "My_app",
+        str(latest_info["name"]),
         f"http://localhost:{8501}",
         width=1200,
         height=800,
@@ -86,6 +90,6 @@ def start_webview() -> webview.Window:
         # y=0,
     )
     window.name = "webview_app"  # type: ignore #
-    webview.start(debug=True)
+    webview.start(debug=True, icon="assets/ico/app.ico")
 
     return window  # type: ignore

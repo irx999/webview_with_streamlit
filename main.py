@@ -21,7 +21,9 @@ def main():
         logger.info(f"✅ Start succes -> {webview_app.name}")  # type: ignore #
 
         logger.info(f"🌟 Starting -> {webview.__name__}")
-        webview.start()
+
+        # 这里好像不需要这个东西
+        # webview.start()
 
     except Exception as e:
         logger.exception(e)

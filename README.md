@@ -1,3 +1,6 @@
+![banner](./assets/images/Banner3-large-cn.png)
+
+
 # WebView with Streamlit Desktop Application
 
 这是一个基于 Python 的桌面应用程序示例，它结合了 Streamlit 作为前端界面框架和 pywebview 将 Web 应用封装为原生桌面窗口应用，实现了跨平台的轻量级 GUI 桌面应用开发。
