@@ -197,16 +197,17 @@ class AutoBuild_main_app:
             except Exception as e:
                 print(f"\n ❌️ Failing... {e}.")
 
-        def generating_file_information() -> None:
+        def generating_lastest_info() -> None:
             """生成文件信息"""
             try:
                 print(
                     f"\n 🌟 Generating_latest.json -> {options.distpath}/latest.json \n"
                 )
+                now = datetime.datetime.now()
                 info = {
                     "name": name,
-                    "version": f"{version}+auto_build.{time.time()}",
-                    "pub_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "version": f"{version}+auto_build.{now.month}{now.day}{now.hour}{now.minute}",
+                    "pub_date": now.strftime("%Y-%m-%d %H:%M:%S"),
                     "download_url": "",
                     "update_info": "This is an auto build version",
                 }
@@ -223,6 +224,14 @@ class AutoBuild_main_app:
                 shutil.copy(
                     f"{options.distpath}/latest.json",
                     f"{pack_path}/assets/latest.json",
+                )
+                shutil.copy(
+                    "README.md",
+                    f"{pack_path}/assets/README.md",
+                )
+                shutil.copy(
+                    "pyproject.toml",
+                    f"{pack_path}/assets/pyproject.toml",
                 )
             except Exception as e:
                 print(f"\n ❌️ Failing... {e}.")
@@ -249,7 +258,7 @@ class AutoBuild_main_app:
         delete_build_file()
 
         # 生成文件信息
-        generating_file_information()
+        generating_lastest_info()
 
         # 复制文件
         copy_file()
@@ -293,7 +302,9 @@ class AutoBuild_update_app:
 
 
 if __name__ == "__main__":
-    mode = input("Plese input mode: \n 1   🌟: main \n 2   🌟: update \n")
+    mode = input(
+        "Auto_build mode: \n 1   🌟: main \n 2   🌟: update \n Plese input mode:"
+    )
     match mode:
         case "" | None:
             sys.exit()

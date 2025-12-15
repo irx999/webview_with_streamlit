@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 
@@ -9,15 +10,15 @@ from src.app import start_fastapi, start_streamlit, start_webview
 logger.add("logs/app.log", format="{time} {level} {message}")
 
 
-def main():
+def main(debug_mode):
     try:
-        streamlit_app = start_streamlit()
+        streamlit_app = start_streamlit(debug_mode)
         logger.info(f"✅ Start succes -> {streamlit_app.name}")
 
-        fastapi_app = start_fastapi()
+        fastapi_app = start_fastapi(debug_mode)
         logger.info(f"✅ Start succes -> {fastapi_app.name}")
 
-        webview_app = start_webview()
+        webview_app = start_webview(debug_mode)
         logger.info(f"✅ Start succes -> {webview_app.name}")  # type: ignore #
 
         logger.info(f"🌟 Starting -> {webview.__name__}")
@@ -32,8 +33,9 @@ def main():
 
         streamlit_app.terminate()
         streamlit_app.join()
-
         webview_app.destroy()
+
+        logger.info("✅ Stoped")
         sys.exit()
 
 
@@ -50,4 +52,16 @@ if __name__ == "__main__":
     else:
         logger.info(f"🌟 Runing in {os.getcwd()} by uv")
 
-    main()
+    parser = argparse.ArgumentParser(description="Webview Application")
+    parser.add_argument("--debug", "-d", action="store_true", help="Enable debug mode")
+    parser.add_argument("--start", "-s", type=str, help="Start the app with password")
+
+    args = parser.parse_args()
+
+    if not args.start or args.start != "123":
+        parser.print_help()
+        sys.exit(0)
+
+    main(
+        debug_mode=args.debug,
+    )

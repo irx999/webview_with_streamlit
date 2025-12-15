@@ -1,11 +1,7 @@
 {
-    "name": "My_App_0.0.1",
-    "version": "0.0.1+auto_build.1760452433.4006422",
-    "pub_date": "2025-10-14 22:33:53",
-    "platforms": {
-        "windows-x86_64": {
-            "signature": "",
-            "url": ""
-        }
-    }
+    "name": "Better_tools",
+    "version": "0.0.1+auto_build.12151329",
+    "pub_date": "2025-12-15 13:29:01",
+    "download_url": "",
+    "update_info": "This is an auto build version"
 }

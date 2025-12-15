@@ -2,18 +2,20 @@ import requests
 import streamlit as st
 from streamlit import session_state as ss
 
+from src.app.app_info import App_fastapi
+
 
 def get_window_size():
     try:
         width_response = requests.get(
-            "http://127.0.0.1:48000/api/v1/pywebview/window/get?property=width",
+            f"{App_fastapi.base_url}/pywebview/window/get?property=width",
             timeout=5,
         )
         width_data = width_response.json()
         width = width_data["data"]
 
         height_response = requests.get(
-            "http://127.0.0.1:48000/api/v1/pywebview/window/get?property=height",
+            f"{App_fastapi.base_url}/pywebview/window/get?property=height",
             timeout=5,
         )
         height_data = height_response.json()
@@ -31,7 +33,7 @@ def set_window_size() -> None:
         width = ss.get("windows_width", 1200)
         height = ss.get("windows_height", 800)
         response = requests.post(
-            "http://127.0.0.1:48000/api/v1/pywebview/window/set",
+            f"{App_fastapi.base_url}/pywebview/window/set",
             json={"func": "resize", "width": width, "height": height},
             timeout=5,
         )
@@ -45,7 +47,7 @@ def set_window_size() -> None:
 def change_window_fullscreen() -> None:
     try:
         response = requests.post(
-            "http://127.0.0.1:48000/api/v1/pywebview/window/set",
+            f"{App_fastapi.base_url}/pywebview/window/set",
             json={"func": "toggle_fullscreen"},
             timeout=5,
         )
@@ -64,7 +66,7 @@ def change_on_top() -> None:
 
         time.sleep(0.1)
         response = requests.post(
-            "http://127.0.0.1:48000/api/v1/pywebview/window/set",
+            f"{App_fastapi.base_url}/pywebview/window/set",
             json={"func": "on_top"},
             timeout=5,
         )

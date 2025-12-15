@@ -5,9 +5,9 @@ import threading
 
 import webview
 
-from .app_info import AppInfo
+from src.fast_api.fastapi_app import app
 
-latest_info = AppInfo.get_latest_info()
+from .app_info import App, App_fastapi, App_streamlit
 
 
 def get_script_path() -> str:
@@ -28,14 +28,15 @@ def run_streamlit(script_path: str, options) -> None:
     stcli.main()
 
 
-def start_streamlit() -> multiprocessing.Process:
+def start_streamlit(debug_mode: bool = False) -> multiprocessing.Process:
     """启动Streamlit服务器"""
 
     """在单独的线程中启动Streamlit服务器"""
     options = {}
     script_path = get_script_path()
-    port = 8501
-    options["server.address"] = "localhost"
+    port = App_streamlit.port
+
+    options["server.address"] = App_streamlit.host
     options["server.port"] = str(port)
     options["server.headless"] = "true"
     options["global.developmentMode"] = "false"
@@ -53,34 +54,37 @@ def start_streamlit() -> multiprocessing.Process:
     return streamlit_process
 
 
-def start_fastapi() -> threading.Thread:
+def start_fastapi(debug_mode: bool = False) -> threading.Thread:
     """启动Fastapi服务器"""
 
     def run():
         import uvicorn
 
-        from src.fast_api.fastapi_app import app
-
         # 使用导入字符串而不是应用实例，以支持重载功能
         uvicorn.run(
             app,
-            host="localhost",
-            port=48000,
+            # "src.fast_api.fastapi_app:app",
+            host=App_fastapi.host,
+            port=App_fastapi.port,
             log_level="warning",
-            # reload=True,
+            # reload=debug_mode,
         )
 
-    fastapi_thread = threading.Thread(target=run, daemon=True, name="Fastapi_app")
+    fastapi_thread = threading.Thread(
+        target=run,
+        daemon=True,
+        name=App_fastapi.name,
+    )
     fastapi_thread.start()
     return fastapi_thread
 
 
-def start_webview() -> webview.Window:
+def start_webview(debug_mode: bool = False) -> webview.Window:
     """启动webview服务器"""
 
     window = webview.create_window(
-        str(latest_info["name"]),
-        f"http://localhost:{8501}",
+        App.name + "->" + App.version,
+        App_streamlit.base_url,
         width=1200,
         height=800,
         # min_size=(1200, 800),
@@ -89,7 +93,10 @@ def start_webview() -> webview.Window:
         # x=0,
         # y=0,
     )
-    window.name = "webview_app"  # type: ignore #
-    webview.start(debug=True, icon="assets/ico/app.ico")
+    window.name = App.name  # type: ignore #
+    webview.start(
+        debug=debug_mode,
+        icon="assets/ico/app.ico",
+    )
 
     return window  # type: ignore

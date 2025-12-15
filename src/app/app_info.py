@@ -1,18 +1,37 @@
-import json
-import os
+from dataclasses import dataclass
+
+from src.utils import Config_reader
+
+PYPROJECT = Config_reader(["pyproject.toml", "assets/pyproject.toml"])
+LATESTINFO = Config_reader("assets/latest.json")
 
 
-class AppInfo:
-    @staticmethod
-    def get_latest_info() -> dict[str, str | dict[str, dict[str, str]]]:
-        if os.path.exists("./assets/latest.json"):
-            with open("./assets/latest.json", "r", encoding="utf-8") as file:
-                data = json.load(file)
-            return data
-        else:
-            return {
-                "name": "My_App",
-                "version": "None",
-                "pub_date": "2099-12-31 24:59:59",
-                "platforms": {"windows-x86_64": {"signature": "", "url": ""}},
-            }
+@dataclass
+class App:
+    name: str = PYPROJECT["project"]["name"]
+    description: str = PYPROJECT["project"]["description"]
+    version: str = PYPROJECT["project"]["version"]
+    mtime: str = PYPROJECT.mtime
+    # dependencies: str = str(PYPROJECT["project"]["dependencies"])
+    latestinfo = LATESTINFO
+
+
+@dataclass
+class App_streamlit(App):
+    """celery 配置"""
+
+    name: str = "app_streamlit"
+    host: str = "localhost"
+    port: int = 38501
+    base_url: str = f"http://{host}:{port}"
+
+
+@dataclass
+class App_fastapi(App):
+    """fastapi 配置"""
+
+    name: str = "app_fastapi"
+    host: str = "localhost"
+    port: int = 38502
+    root_path: str = "/api/v1"
+    base_url: str = f"http://{host}:{port}{root_path}"

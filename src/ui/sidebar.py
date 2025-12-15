@@ -1,6 +1,8 @@
 import streamlit as st
 from streamlit import session_state as ss
 
+from src.app import App
+
 # from streamlit_cookies_controller import CookieController
 
 # controller = CookieController(key="cookies")
@@ -35,3 +37,8 @@ def st_sidebar():
     columns[1].caption(
         "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
     )
+    st.sidebar.badge(App.name + " -> " + App.version, icon="📦", color="green")
+    st.sidebar.badge(str(App.latestinfo["version"]), icon="🏷️", color="violet")
+    st.sidebar.badge("mtime -> " + App.mtime, icon="🏷️", color="violet")
+    st.sidebar.caption(App.description)
+    # st.sidebar.badge(App.description, icon="ℹ️", color="blue")

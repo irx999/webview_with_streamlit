@@ -57,9 +57,9 @@ uv run  auto_build.py
 ```
 .
 ├── main.py                 # 应用主入口
-├── streamlit_app.py        # Streamlit 应用主文件
+├── auto_build.py           # 自动构建脚本
+├── updater.py              # 更新脚本
 ├── pyproject.toml          # 项目配置文件
-├── webview.spec            # PyInstaller 打包配置
 ├── src/
 │   ├── app/
 │   │   └── start_app.py    # 应用启动逻辑
@@ -91,8 +91,8 @@ uv run  auto_build.py
 ## ⚙️ 配置说明
 
 应用使用以下端口：
-- Streamlit: 8501
-- FastAPI: 8000
+- Streamlit: 38501
+- FastAPI: 38000
 
 ## 🛠️ 开发指南
 
@@ -100,7 +100,7 @@ uv run  auto_build.py
 
 1. 在 `src/ui/pages/` 下创建新的目录
 2. 添加页面文件（如 `new_page.py`）
-3. 在 `src/ui/pages/__init__.py` 的 [PAGES](file://c:\Users\irx999\Desktop\git\webview_with_streamlit\src\ui\pages\__init__.py#L51-L70) 字典中注册新页面
+3. 在 `src/ui/pages/__init__.py` 的 [PAGES] 列表中添加新页面
 
 ### 添加新的 API
 

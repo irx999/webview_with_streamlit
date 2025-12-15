@@ -10,4 +10,4 @@ api_router.include_router(window.router)
 
 @api_router.get("/")
 async def root():
-    return {"message": "Hello ???!"}
+    return {"message": "Hello !"}
