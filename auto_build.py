@@ -133,7 +133,10 @@ class AutoBuild_main_app:
             sys.exit(1)
 
     @staticmethod
-    def main():
+    def main(
+        need_debug_console,
+        need_compress,
+    ):
         import time
 
         import toml
@@ -171,7 +174,7 @@ class AutoBuild_main_app:
             codesign_identity=None,
             bundle_id=None,
             uac_admin=False,
-            debug_console=True,
+            debug_console=need_debug_console,  # 是否显示控制台
             product_version=version,
             file_version=version,
             company_name=None,
@@ -264,7 +267,8 @@ class AutoBuild_main_app:
         copy_file()
 
         # 压缩
-        compress()
+        if need_compress:
+            compress()
 
         print(f"\n ✅ All Done spend {time.time() - strat_time:.2f} s")
 
@@ -309,6 +313,19 @@ if __name__ == "__main__":
         case "" | None:
             sys.exit()
         case "1":
-            AutoBuild_main_app.main()
+            need_debug_console = input("Need_debug_console: [y/n][1/2]").lower()
+            if need_debug_console == "y" or need_debug_console == "1":
+                need_debug_console = True
+            else:
+                need_debug_console = False
+            need_compress = input("Need_compress?: [y/n][1/2]")
+            if need_compress == "y" or need_compress == "1":
+                need_compress = True
+            else:
+                need_compress = False
+            AutoBuild_main_app.main(
+                need_debug_console=need_debug_console,
+                need_compress=need_compress,
+            )
         case "2":
             AutoBuild_update_app.main()
