@@ -54,12 +54,13 @@ def start_streamlit(debug_mode: bool = False) -> multiprocessing.Process:
 
 def run_fastapi():
     import uvicorn
-    # from src.fast_api.fastapi_app import app
+
+    from src.fast_api.fastapi_app import app
 
     # 使用导入字符串而不是应用实例，以支持重载功能
     uvicorn.run(
-        # app = app,
-        app="src.fast_api.fastapi_app:app",
+        app=app,
+        # app="src.fast_api.fastapi_app:app",
         host=App_fastapi.host,
         port=App_fastapi.port,
         log_level="warning",
