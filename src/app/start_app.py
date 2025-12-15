@@ -83,7 +83,7 @@ def start_webview(debug_mode: bool = False) -> webview.Window:
     """启动webview服务器"""
 
     window = webview.create_window(
-        App.name + "->" + App.version,
+        App.name,
         App_streamlit.base_url,
         width=1200,
         height=800,

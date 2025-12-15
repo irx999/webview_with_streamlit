@@ -69,7 +69,7 @@ class Config_reader:
         """
         return self.config.items()
 
-    def __getitem__(self, key: str) -> Dict[str, Any]:
+    def __getitem__(self, key: str) -> Dict[str, Any] | Any:
         """
         通过索引获取配置项
 

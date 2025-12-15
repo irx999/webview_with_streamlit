@@ -37,8 +37,9 @@ def st_sidebar():
     columns[1].caption(
         "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
     )
+
     st.sidebar.badge(App.name + " -> " + App.version, icon="📦", color="green")
-    st.sidebar.badge(str(App.latestinfo["version"]), icon="🏷️", color="violet")
-    st.sidebar.badge("mtime -> " + App.mtime, icon="🏷️", color="violet")
+    st.sidebar.badge("v-> " + str(App.latestinfo["version"]), icon="🏷️", color="violet")
+    st.sidebar.badge("m-> " + App.mtime, icon="🏷️", color="blue")
     st.sidebar.caption(App.description)
     # st.sidebar.badge(App.description, icon="ℹ️", color="blue")

@@ -1,5 +1,5 @@
 [project]
-name = "Better_Tools"
+name = "Better-Tools"
 version = "0.0.1"
 description = "WebView with Streamlit Desktop Application"
 readme = "README.md"

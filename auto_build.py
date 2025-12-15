@@ -307,18 +307,18 @@ class AutoBuild_update_app:
 
 if __name__ == "__main__":
     mode = input(
-        "Auto_build mode: \n 1   🌟: main \n 2   🌟: update \n Plese input mode:"
+        "❓Auto_build mode: \n 🌟 1: main \n 🌟 2: update \n Plese input mode:"
     )
     match mode:
         case "" | None:
             sys.exit()
         case "1":
-            need_debug_console = input("Need_debug_console: [y/n][1/2]").lower()
+            need_debug_console = input("❓Need_debug_console: [y/n][1/2]").lower()
             if need_debug_console == "y" or need_debug_console == "1":
                 need_debug_console = True
             else:
                 need_debug_console = False
-            need_compress = input("Need_compress?: [y/n][1/2]")
+            need_compress = input("❓Need_compress?: [y/n][1/2]")
             if need_compress == "y" or need_compress == "1":
                 need_compress = True
             else:
