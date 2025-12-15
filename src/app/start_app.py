@@ -5,8 +5,6 @@ import threading
 
 import webview
 
-from src.fast_api.fastapi_app import app
-
 from .app_info import App, App_fastapi, App_streamlit
 
 
@@ -38,45 +36,47 @@ def start_streamlit(debug_mode: bool = False) -> multiprocessing.Process:
 
     options["server.address"] = App_streamlit.host
     options["server.port"] = str(port)
-    options["server.headless"] = "true"
-    options["global.developmentMode"] = "false"
+    options["server.headless"] = "true"  # 关掉了就会打开一个浏览器
+    options["global.developmentMode"] = "false"  # 这个必须参数都为false
     # options["client.showErrorDetails"] = "none"
-    options["client.toolbarMode"] = "viewer"  # "minimal or viewer"
+    options["client.toolbarMode"] = "minimal"  # "minimal or viewer"
 
     multiprocessing.freeze_support()
-    streamlit_process = multiprocessing.Process(
+    process = multiprocessing.Process(
         target=run_streamlit,
         args=(script_path, options),
         name="Streamlit_app",
     )
-    streamlit_process.start()
+    process.start()
 
-    return streamlit_process
+    return process
+
+
+def run_fastapi():
+    import uvicorn
+    # from src.fast_api.fastapi_app import app
+
+    # 使用导入字符串而不是应用实例，以支持重载功能
+    uvicorn.run(
+        # app = app,
+        app="src.fast_api.fastapi_app:app",
+        host=App_fastapi.host,
+        port=App_fastapi.port,
+        log_level="warning",
+        # reload=True,
+    )
 
 
 def start_fastapi(debug_mode: bool = False) -> threading.Thread:
     """启动Fastapi服务器"""
 
-    def run():
-        import uvicorn
-
-        # 使用导入字符串而不是应用实例，以支持重载功能
-        uvicorn.run(
-            app,
-            # "src.fast_api.fastapi_app:app",
-            host=App_fastapi.host,
-            port=App_fastapi.port,
-            log_level="warning",
-            # reload=debug_mode,
-        )
-
-    fastapi_thread = threading.Thread(
-        target=run,
+    thread = threading.Thread(
+        target=run_fastapi,
         daemon=True,
         name=App_fastapi.name,
     )
-    fastapi_thread.start()
-    return fastapi_thread
+    thread.start()
+    return thread
 
 
 def start_webview(debug_mode: bool = False) -> webview.Window:
@@ -87,9 +87,12 @@ def start_webview(debug_mode: bool = False) -> webview.Window:
         App_streamlit.base_url,
         width=1200,
         height=800,
-        # min_size=(1200, 800),
+        resizable=False,
+        min_size=(1200, 800),
         shadow=True,
         on_top=False,
+        transparent=True,
+        # frameless=True,
         # x=0,
         # y=0,
     )

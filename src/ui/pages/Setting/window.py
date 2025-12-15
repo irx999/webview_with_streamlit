@@ -1,0 +1,116 @@
+import requests
+import streamlit as st
+from streamlit import session_state as ss
+
+from src.app.app_info import App_fastapi
+
+
+def get_window_size():
+    try:
+        width_response = requests.get(
+            f"{App_fastapi.base_url}/pywebview/window/get?property=width",
+            timeout=1,
+        )
+        width_data = width_response.json()
+        width = width_data["data"]
+
+        height_response = requests.get(
+            f"{App_fastapi.base_url}/pywebview/window/get?property=height",
+            timeout=1,
+        )
+        height_data = height_response.json()
+        height = height_data["data"]
+
+        return int(width), int(height)
+    except Exception as e:
+        st.toast(f"获取窗口尺寸时发生错误: {e}", icon="❌")
+        # 发生任何异常时返回默认尺寸
+        return 1200, 800
+
+
+def set_window_size() -> None:
+    try:
+        width = ss.get("windows_width", 1200)
+        height = ss.get("windows_height", 800)
+        response = requests.post(
+            f"{App_fastapi.base_url}/pywebview/window/set",
+            json={"func": "resize", "width": width, "height": height},
+            timeout=1,
+        )
+        result = response.json()
+        if result.get("status") == "success":
+            st.toast("窗口尺寸已调整", icon="✅")
+        else:
+            st.toast(result.get("data", "错误"), icon="❌")
+    except Exception as e:
+        st.toast(f"设置窗口尺寸时发生错误: {e}", icon="❌")
+
+
+def change_window_fullscreen() -> None:
+    try:
+        response = requests.post(
+            f"{App_fastapi.base_url}/pywebview/window/set",
+            json={"func": "toggle_fullscreen"},
+            timeout=1,
+        )
+        result = response.json()
+        if result.get("status") == "success":
+            st.toast("窗口全屏状态已切换", icon="✅")
+        else:
+            st.toast(result.get("data", "错误"), icon="❌")
+
+    except Exception as e:
+        st.toast(f"切换全屏时发生错误: {e}", icon="❌")
+
+
+def change_on_top() -> None:
+    try:
+        import time
+
+        time.sleep(0.1)
+        response = requests.post(
+            f"{App_fastapi.base_url}/pywebview/window/set",
+            json={"func": "on_top"},
+            timeout=1,
+        )
+        result = response.json()
+        if result.get("status") == "success":
+            st.toast("窗口置顶状态已切换", icon="✅")
+        else:
+            st.toast(result.get("data", "错误"), icon="❌")
+    except Exception as e:
+        st.toast(f"切换窗口置顶时发生错误: {e}", icon="❌")
+
+
+if __name__ == "__main__":
+    c = st.columns(2)
+    with c[0].container(border=True, width=380):
+        st.badge("窗口设置", icon="⚙️")
+        # st.subheader("窗口尺寸")
+        windows_width, windows_height = get_window_size()
+        width = st.slider(
+            "windows_width",
+            1200,
+            2560,
+            key="windows_width",
+            step=100,
+            value=windows_width,
+            on_change=set_window_size,
+        )
+        height = st.slider(
+            "windows_height",
+            800,
+            1440,
+            key="windows_height",
+            step=100,
+            value=windows_height,
+            on_change=set_window_size,
+        )
+        st.toggle(
+            "切换全屏",
+            on_change=change_window_fullscreen,
+        )
+        st.toggle(
+            "切换置顶",
+            on_change=change_on_top,
+        )

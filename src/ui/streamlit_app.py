@@ -8,9 +8,9 @@ st.set_page_config(
     layout="wide",
     page_icon="🧊",
     initial_sidebar_state="auto",
-    menu_items={
-        "About": "# This is a header. This is an *extremely* cool app!",
-    },
+    # menu_items={
+    #     "About": "# This is a header. This is an *extremely* cool app!",
+    # },
 )
 
 st.logo(

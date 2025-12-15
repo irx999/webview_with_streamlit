@@ -26,12 +26,24 @@ HP = get_script_path()
 PAGES: dict[str, list[Any]] = {
     "🏠Home": [
         st.Page(
-            HP + "Home/welcome.py",
-            title="主页",
+            HP + "Home/readme.py",
+            title="README",
+            icon="🏠",
+        ),
+        st.Page(
+            HP + "Home/changelog.py",
+            title="CHANGELOG",
             icon="🏠",
         ),
     ],
-    "功能测试": [
+    "⚙️Setting": [
+        st.Page(
+            HP + "Setting/window.py",
+            title="pywebview窗口设置",
+            icon="⚙️",
+        ),
+    ],
+    "🧪功能测试": [
         st.Page(
             HP + "Test/test_a.py",
             title="测试页1",
@@ -40,13 +52,6 @@ PAGES: dict[str, list[Any]] = {
         st.Page(
             HP + "Test/test_b.py",
             title="测试页2",
-            icon="🧪",
-        ),
-    ],
-    "Pywebview": [
-        st.Page(
-            HP + "pywebview/window.py",
-            title="window",
             icon="🧪",
         ),
     ],
