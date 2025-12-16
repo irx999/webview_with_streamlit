@@ -97,12 +97,10 @@ class Photoshop:
                 base_path = os.path.join(os.getcwd(), self.psd_dir_path)
             else:
                 base_path = self.psd_dir_path
-            # 尝试PSD和PSB两种格式
-            for ext in [".psd", ".psb"]:
-                file_path = os.path.join(base_path, f"{self.psd_name}{ext}")
-                if os.path.isfile(file_path):
-                    return file_path
-                raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
+            file_path = os.path.join(base_path, f"{self.psd_name}")
+            if os.path.isfile(file_path):
+                return file_path
+            raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
 
         except Exception as e:
             logger.error(f"获取PSD文件路径失败: {e}")

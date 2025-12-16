@@ -38,7 +38,7 @@ class LayerFactory:
             layers_in_set = [layer.name for layer in layer_set.artLayers] + [
                 layer.name for layer in layer_set.layerSets
             ]
-            layers.append(f"{layer_set.name}: {layers_in_set}")
+            layers.append({layer_set.name: layers_in_set})
 
         return layers
 

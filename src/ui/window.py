@@ -82,35 +82,39 @@ def change_on_top() -> None:
         st.toast(f"切换窗口置顶时发生错误: {e}", icon="❌")
 
 
+def window_setting():
+    st.badge("窗口设置", icon="⚙️")
+    # st.subheader("窗口尺寸")
+    windows_width, windows_height = get_window_size()
+    c1 = st.columns(2)
+    c1[0].slider(
+        "windows_w",
+        1200,
+        2560,
+        key="windows_width",
+        step=100,
+        value=windows_width,
+        on_change=set_window_size,
+    )
+    c1[1].slider(
+        "windows_h",
+        800,
+        1440,
+        key="windows_height",
+        step=100,
+        value=windows_height,
+        on_change=set_window_size,
+    )
+    c2 = st.columns(2)
+    c2[0].toggle(
+        "全屏",
+        on_change=change_window_fullscreen,
+    )
+    c2[1].toggle(
+        "置顶",
+        on_change=change_on_top,
+    )
+
+
 if __name__ == "__main__":
-    c = st.columns(2)
-    with c[0].container(border=True, width=380):
-        st.badge("窗口设置", icon="⚙️")
-        # st.subheader("窗口尺寸")
-        windows_width, windows_height = get_window_size()
-        width = st.slider(
-            "windows_width",
-            1200,
-            2560,
-            key="windows_width",
-            step=100,
-            value=windows_width,
-            on_change=set_window_size,
-        )
-        height = st.slider(
-            "windows_height",
-            800,
-            1440,
-            key="windows_height",
-            step=100,
-            value=windows_height,
-            on_change=set_window_size,
-        )
-        st.toggle(
-            "切换全屏",
-            on_change=change_window_fullscreen,
-        )
-        st.toggle(
-            "切换置顶",
-            on_change=change_on_top,
-        )
+    main()

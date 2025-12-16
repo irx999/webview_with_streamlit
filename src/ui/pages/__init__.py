@@ -36,13 +36,7 @@ PAGES: dict[str, list[Any]] = {
             icon="🏠",
         ),
     ],
-    "⚙️Setting": [
-        st.Page(
-            HP + "Setting/window.py",
-            title="pywebview窗口设置",
-            icon="⚙️",
-        ),
-    ],
+    "⚙️Setting": [],
     "🧪功能测试": [
         st.Page(
             HP + "Test/test_a.py",
@@ -53,6 +47,13 @@ PAGES: dict[str, list[Any]] = {
             HP + "Test/test_b.py",
             title="测试页2",
             icon="🧪",
+        ),
+    ],
+    "🎨PS自动化": [
+        st.Page(
+            HP + "PSAutomation/main.py",
+            title="主界面",
+            icon="🎨",
         ),
     ],
 }
