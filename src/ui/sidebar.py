@@ -18,7 +18,7 @@ def st_sidebar():
     else:
         st.sidebar.success(f"**当前登录权限:**   {ss.get('roles', '未知权限')}")
 
-    with st.sidebar.expander("**Cache_Manager**"):
+    with st.sidebar.expander("Cache_Manager"):
         st.button(
             "⚙️Clear_cache_res",
             on_click=lambda: st.cache_resource.clear(),
@@ -43,8 +43,7 @@ def st_sidebar():
     st.sidebar.badge("t->" + App.mtime, icon="🏷️", color="blue")
 
     st.sidebar.caption(App.description)
-    # st.sidebar.badge(App.description, icon="ℹ️", color="blue")
 
-    with st.sidebar.popover("modules_info"):
+    with st.sidebar.popover("Modules_Info"):
         for k, v in App.hidden_import.items():
             st.badge(f"{k} -> {v}", icon="📦")

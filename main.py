@@ -77,7 +77,7 @@ if __name__ == "__main__":
             logger.debug("Debug mode enabled")
 
         if not args.start or args.start != "123":
-            logger.error("Invalid password")
+            logger.warning("Invalid password")
             sys.exit(0)
 
         main(
