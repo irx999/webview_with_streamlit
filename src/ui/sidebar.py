@@ -39,7 +39,12 @@ def st_sidebar():
     )
 
     st.sidebar.badge(App.name + " -> " + App.version, icon="📦", color="green")
-    st.sidebar.badge("v-> " + str(App.latestinfo["version"]), icon="🏷️", color="violet")
-    st.sidebar.badge("m-> " + App.mtime, icon="🏷️", color="blue")
+    st.sidebar.badge("v->" + str(App.latestinfo["version"]), icon="🏷️", color="violet")
+    st.sidebar.badge("t->" + App.mtime, icon="🏷️", color="blue")
+
     st.sidebar.caption(App.description)
     # st.sidebar.badge(App.description, icon="ℹ️", color="blue")
+
+    with st.sidebar.popover("modules_info"):
+        for k, v in App.hidden_import.items():
+            st.badge(f"{k} -> {v}", icon="📦")

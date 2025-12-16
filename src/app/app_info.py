@@ -2,8 +2,11 @@ from dataclasses import dataclass
 
 from src.utils import Config_reader
 
+from .hidden_import import load_hidden_import
+
 PYPROJECT = Config_reader(["pyproject.toml", "assets/pyproject.toml"])
 LATESTINFO = Config_reader("assets/latest.json")
+HIDDEN_IMPORT = load_hidden_import()
 
 
 @dataclass
@@ -14,6 +17,7 @@ class App:
     mtime: str = PYPROJECT.mtime
     # dependencies: str = str(PYPROJECT["project"]["dependencies"])
     latestinfo = LATESTINFO
+    hidden_import = HIDDEN_IMPORT
 
 
 @dataclass

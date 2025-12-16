@@ -134,8 +134,8 @@ class AutoBuild_main_app:
 
     @staticmethod
     def main(
-        need_debug_console,
-        need_compress,
+        need_debug_console: bool = False,
+        need_compress: bool = False,
     ):
         import time
 
@@ -168,9 +168,10 @@ class AutoBuild_main_app:
                 ["pyproject.toml:pyproject.toml"],
             ],
             add_binary=[],
-            hidden_import=[
-                ["xlwings"],
-            ],
+            # hidden_import=[
+            #     ["xlwings"],
+            # ],
+            hidden_import=[],
             codesign_identity=None,
             bundle_id=None,
             uac_admin=False,
@@ -313,19 +314,15 @@ if __name__ == "__main__":
         case "" | None:
             sys.exit()
         case "1":
-            need_debug_console = input("❓Need_debug_console: [y/n][1/2]").lower()
-            if need_debug_console == "y" or need_debug_console == "1":
-                need_debug_console = True
-            else:
-                need_debug_console = False
-            need_compress = input("❓Need_compress?: [y/n][1/2]")
-            if need_compress == "y" or need_compress == "1":
-                need_compress = True
-            else:
-                need_compress = False
+            need_debug_console = input("❓Need_debug_console: [y/n][1/2]") in ["y", "1"]
+
+            need_compress = input("❓Need_compress?: [y/n][1/2]") in ["y", "1"]
             AutoBuild_main_app.main(
                 need_debug_console=need_debug_console,
                 need_compress=need_compress,
             )
         case "2":
             AutoBuild_update_app.main()
+
+    dist_full_path = os.path.join(os.getcwd(), "dist")
+    os.startfile(dist_full_path)
