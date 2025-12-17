@@ -48,6 +48,9 @@ def set_window_size() -> None:
 
 def change_window_fullscreen() -> None:
     try:
+        import time
+
+        time.sleep(0.1)
         response = requests.post(
             f"{App_fastapi.base_url}/pywebview/window/set",
             json={"func": "toggle_fullscreen"},
@@ -56,8 +59,11 @@ def change_window_fullscreen() -> None:
         result = response.json()
         if result.get("status") == "success":
             st.toast("窗口全屏状态已切换", icon="✅")
+
         else:
             st.toast(result.get("data", "错误"), icon="❌")
+
+        ss["windows_fullscreen"] = ss.get("windows_fullscreen", True)
 
     except Exception as e:
         st.toast(f"切换全屏时发生错误: {e}", icon="❌")
@@ -78,6 +84,8 @@ def change_on_top() -> None:
             st.toast("窗口置顶状态已切换", icon="✅")
         else:
             st.toast(result.get("data", "错误"), icon="❌")
+        ss["windows_on_top"] = ss.get("windows_on_top", True)
+
     except Exception as e:
         st.toast(f"切换窗口置顶时发生错误: {e}", icon="❌")
 
@@ -85,15 +93,19 @@ def change_on_top() -> None:
 def window_setting():
     st.badge("窗口设置", icon="⚙️")
     # st.subheader("窗口尺寸")
-    windows_width, windows_height = get_window_size()
+
+    # 窗口尺寸
     c1 = st.columns(2)
+    windows_width, windows_height = get_window_size()
+    ss["windows_width"] = windows_width
+    ss["windows_height"] = windows_height
     c1[0].slider(
         "windows_w",
         1200,
         2560,
         key="windows_width",
         step=100,
-        value=windows_width,
+        # value=windows_width,
         on_change=set_window_size,
     )
     c1[1].slider(
@@ -102,19 +114,29 @@ def window_setting():
         1440,
         key="windows_height",
         step=100,
-        value=windows_height,
+        # value=windows_height,
         on_change=set_window_size,
     )
+
+    # 窗口状态
     c2 = st.columns(2)
     c2[0].toggle(
         "全屏",
         on_change=change_window_fullscreen,
+        key="windows_fullscreen",
     )
     c2[1].toggle(
         "置顶",
+        key="windows_on_top",
         on_change=change_on_top,
+    )
+    print(
+        requests.get(
+            f"{App_fastapi.base_url}/pywebview/window/get?property=fullscreen",
+            timeout=1,
+        ).json()["data"]
     )
 
 
 if __name__ == "__main__":
-    main()
+    window_setting()

@@ -5,7 +5,7 @@ from src.modules.ps_of_py.ps import Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 
 
-def load_ps_info():
+def load_ps_settings():
     with st.expander("⚙️ 配置参数", expanded=True):
         # PSD文件配置
         c1 = st.columns(2)
@@ -29,9 +29,9 @@ def load_ps_info():
             "psd_name": psd_name_path.name,
             "psd_dir_path": psd_name_path.parent._str,
             "export_folder": export_folder._str,
-            "file_format": file_format,
+            "file_format": file_format if file_format else "png",
             "suffix": suffix,
-            "colse_ps": close_ps,
+            "colse_ps": close_ps if close_ps else False,
         }
     return settings
 
@@ -45,13 +45,14 @@ def show():
 
     with tab1:
         st.header("配置设置")
-        ps_settings = load_ps_info()
+        ps_settings = load_ps_settings()
         st.write(ps_settings)
         if st.button("开始处理"):
             with st.spinner("处理中..."):
                 ps = Photoshop(**ps_settings)
                 st.write(ps.get_psd_info())
                 st.dataframe(pd.DataFrame(ps.get_psd_info()["all_layer"]))
+                ps.ps_saveas("test.png")
 
         pass
     with tab2:
