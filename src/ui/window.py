@@ -130,12 +130,6 @@ def window_setting():
         key="windows_on_top",
         on_change=change_on_top,
     )
-    print(
-        requests.get(
-            f"{App_fastapi.base_url}/pywebview/window/get?property=fullscreen",
-            timeout=1,
-        ).json()["data"]
-    )
 
 
 if __name__ == "__main__":

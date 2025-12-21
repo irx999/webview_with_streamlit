@@ -168,6 +168,8 @@ class Photoshop:
             logger.error(f"创建文件夹 {self.export_folder} 失败: {e}")
         try:
             path = f"{self.export_folder}/{export_path}{self.suffix}.{self.file_format}"
+            # print(path_cache)
+            # path = r"C:\Users\irx999\Pictures\BandiView\123.png"
             self.doc.saveAs(
                 path,
                 self.saveoptions,

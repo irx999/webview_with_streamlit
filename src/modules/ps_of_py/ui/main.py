@@ -1,7 +1,6 @@
-import pandas as pd
 import streamlit as st
 
-from src.modules.ps_of_py.ps import Photoshop
+from src.modules.ps_of_py.ps import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 
 
@@ -46,15 +45,41 @@ def show():
     with tab1:
         st.header("配置设置")
         ps_settings = load_ps_settings()
-        st.write(ps_settings)
-        if st.button("开始处理"):
+        # st.write(ps_settings)
+        # if st.button("获取psd信息"):
+        #     with st.spinner("处理中..."):
+        #         ps = Photoshop(**ps_settings)
+        #         # st.write(ps.get_psd_info())
+
+        if st.button("一键启动"):
             with st.spinner("处理中..."):
                 ps = Photoshop(**ps_settings)
-                st.write(ps.get_psd_info())
-                st.dataframe(pd.DataFrame(ps.get_psd_info()["all_layer"]))
-                ps.ps_saveas("test.png")
+                load_data = LoadData()
+                with ps:
+                    # for merge_name in load_data.merge_names:
 
-        pass
+                    merge_dict = {}
+                    for task in load_data.selected_skus():
+                        merge_list = task["任务名"].split("|")
+                        if len(merge_list) > 1:
+                            if merge_list[0] not in merge_dict:
+                                merge_dict[merge_list[0]] = []
+                            merge_dict[merge_list[0]].append(
+                                merge_list[1] + ps.suffix + "." + ps.file_format
+                            )
+
+                        ps.core(task["任务名"], task["修改信息"])
+
+                    # ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
+                print(merge_dict)
+
+                for merge_name, merge_list in merge_dict.items():
+                    Image_utils.merge_images(
+                        ps.export_folder + "/" + merge_name,
+                        merge_list,
+                        merge_name + "(1)." + ps_settings["file_format"],
+                    )
+
     with tab2:
         pass
 
