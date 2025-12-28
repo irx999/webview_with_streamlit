@@ -26,6 +26,12 @@ HP = get_script_path()
 PAGES: dict[str, list[Any]] = {
     "🏠Home": [
         st.Page(
+            HP + "Home/home.py",
+            title="HOME",
+            icon="🏠",
+            default=True,
+        ),
+        st.Page(
             HP + "Home/readme.py",
             title="README",
             icon="🏠",
