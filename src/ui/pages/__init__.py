@@ -57,7 +57,7 @@ PAGES: dict[str, list[Any]] = {
     ],
     "🎨PS自动化": [
         st.Page(
-            get_path("src/modules/ps_of_py/ui/main.py"),
+            get_path("src/plugins/ps_of_py/ui/main.py"),
             title="主界面",
             icon="🎨",
         ),

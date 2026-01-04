@@ -295,7 +295,7 @@ class AutoBuild_update_app:
         version = "0.0.1"
         options = argparse.Namespace(
             script="updater.py",
-            icon="assets/ico/app.ico",
+            icon="assets/ico/main.ico",
             name=name,
             product_name=name,
             version=version,
