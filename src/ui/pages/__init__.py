@@ -29,12 +29,12 @@ PAGES: dict[str, list[Any]] = {
             HP + "Home/home.py",
             title="HOME",
             icon="🏠",
-            default=True,
         ),
         st.Page(
             HP + "Home/readme.py",
             title="README",
             icon="🏠",
+            default=True,
         ),
         st.Page(
             HP + "Home/changelog.py",
@@ -57,7 +57,7 @@ PAGES: dict[str, list[Any]] = {
     ],
     "🎨PS自动化": [
         st.Page(
-            get_path("src/plugins/ps_of_py/src/ui/main.py"),
+            get_path("plugins/ps_of_py/src/ui/main.py"),
             title="主界面",
             icon="🎨",
         ),

@@ -13,9 +13,7 @@ if __name__ == "__main__":
             with carousel_container:
                 st.image("assets/images/Banner3-large-cn.png")
             # 三个公告tabs
-            tab1, tab2, tab3, tab4 = st.tabs(
-                ["系统公告", "项目动态", "使用指南", "哈哈"]
-            )
+            tab1, tab2, tab3, tab4 = st.tabs(["None", "None", "None", "None"])
 
             with tab1:
                 st.markdown("""

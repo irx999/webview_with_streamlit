@@ -166,6 +166,7 @@ class AutoBuild_main_app:
                 ["src:src"],
                 ["src/ui:src/ui"],
                 ["pyproject.toml:pyproject.toml"],
+                ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
             ],
             add_binary=[],
             # hidden_import=[

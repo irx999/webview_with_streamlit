@@ -21,7 +21,7 @@ def st_markdown(markdown_string):
             st.image(part, width="content")
 
 
-def st_folder_picker(name: str = "选择文件夹") -> Path:
+def st_folder_picker(name: str = "选择文件夹", button_icon=None) -> Path:
     # Import tkinter
     import tkinter as tk
     from tkinter import filedialog
@@ -31,7 +31,7 @@ def st_folder_picker(name: str = "选择文件夹") -> Path:
     root.withdraw()
     root.wm_attributes("-topmost", 1)
 
-    clicked = st.button(label=name, key=name)
+    clicked = st.button(label=name, key=name, icon=button_icon if button_icon else None)
     # st.badge(ss.get(f"{name}_folder_path", os.getcwd()), icon="📁")
     if clicked:
         dir_path = filedialog.askdirectory(
@@ -45,7 +45,7 @@ def st_folder_picker(name: str = "选择文件夹") -> Path:
     return Path(ss.get(f"{name}_folder_path", os.getcwd()))
 
 
-def st_file_picker(name: str = "选择文件") -> Path:
+def st_file_picker(name: str = "选择文件", button_icon=None) -> Path:
     # Import tkinter
 
     import tkinter as tk
@@ -56,7 +56,7 @@ def st_file_picker(name: str = "选择文件") -> Path:
     root.withdraw()
     root.wm_attributes("-topmost", 1)
 
-    clicked = st.button(label=name, key=name)
+    clicked = st.button(label=name, key=name, icon=button_icon if button_icon else None)
     # st.badge(ss.get(f"{name}_file_path", os.getcwd()), icon="📁")
     if clicked:
         dir_path = filedialog.askopenfilename(
