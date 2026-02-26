@@ -154,7 +154,7 @@ class AutoBuild_main_app:
         options = argparse.Namespace(
             script="main.py",
             # streamlit_script="streamlit_app.py",
-            icon="assets/ico/app.ico",
+            icon="assets/ico/main.ico",
             name=name,
             product_name=name,
             version=version,
