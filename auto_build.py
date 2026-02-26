@@ -154,7 +154,7 @@ class AutoBuild_main_app:
         options = argparse.Namespace(
             script="main.py",
             # streamlit_script="streamlit_app.py",
-            icon="assets/ico/app.ico",
+            icon="assets/ico/main.ico",
             name=name,
             product_name=name,
             version=version,
@@ -166,6 +166,7 @@ class AutoBuild_main_app:
                 ["src:src"],
                 ["src/ui:src/ui"],
                 ["pyproject.toml:pyproject.toml"],
+                ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
             ],
             add_binary=[],
             # hidden_import=[
@@ -295,7 +296,7 @@ class AutoBuild_update_app:
         version = "0.0.1"
         options = argparse.Namespace(
             script="updater.py",
-            icon="assets/ico/app.ico",
+            icon="assets/ico/main.ico",
             name=name,
             product_name=name,
             version=version,

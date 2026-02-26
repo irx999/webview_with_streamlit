@@ -40,6 +40,7 @@ def start_streamlit(debug_mode: bool = False) -> multiprocessing.Process:
     options["global.developmentMode"] = "false"  # 这个必须参数都为false
     # options["client.showErrorDetails"] = "none"
     options["client.toolbarMode"] = "minimal"  # "minimal or viewer"
+    options["theme.base"] = "light"  # "dark or light"
 
     multiprocessing.freeze_support()
     process = multiprocessing.Process(

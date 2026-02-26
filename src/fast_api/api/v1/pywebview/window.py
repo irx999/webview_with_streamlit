@@ -1,6 +1,9 @@
 import webview
 from fastapi import APIRouter, Body, Query
+from loguru import logger
 from webview import Window
+
+logger.add("./logs/fastapi_app.log", rotation="1 MB")
 
 # 创建路由路由器
 router = APIRouter(
@@ -22,6 +25,7 @@ async def resize_window_get(
         if hasattr(window, property):
             # 直接返回属性值，保持原始类型（包括布尔值）
             value = getattr(window, property)
+            logger.info(f"{property} -> {value}")
             return {"status": "success", "data": value}
         else:
             return {"status": "error", "data": "Property not found"}
@@ -35,6 +39,7 @@ async def resize_window_post(
     data: dict = Body(...),
 ):
     try:
+        logger.info(f"/set : data -> {data}")
         window: Window = webview.windows[0]
         if window is None:
             return {"status": "error", "data": "Window not initialized"}
