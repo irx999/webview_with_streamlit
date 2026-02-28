@@ -6,7 +6,7 @@ import PIL
 import xlwings
 from loguru import logger
 
-# logger.add("logs/app.log", format="{time} {level} {message}")
+logger.add("logs/app.log", format="{time} {level} {message}")
 
 
 def load_hidden_import():
