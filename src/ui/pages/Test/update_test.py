@@ -12,8 +12,12 @@ def test_a():
     st.write(pluginManager.is_development_mode())
     for i in pluginManager.load_plugins().items():
         st.write(i)
-    if st.button("更新"):
+    if st.button("检查更新"):
         pluginManager.check_for_updates(
+            "ps_of_py", "irx999/ps_of_py", "dev_for_better_tools"
+        )
+    if st.button("更新"):
+        pluginManager.update_plugin(
             "ps_of_py", "irx999/ps_of_py", "dev_for_better_tools"
         )
 
