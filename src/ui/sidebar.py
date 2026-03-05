@@ -51,7 +51,9 @@ def st_sidebar():
         )
     # 版权信息
     columns = st.sidebar.columns([1, 1], vertical_alignment="center")
-    columns[0].image("assets//images/©.png", width=150)
+    columns[0].image(
+        "assets//images/©.png", width=150, link="https://github.com/irx999"
+    )
     columns[1].caption(
         "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
     )

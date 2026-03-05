@@ -165,8 +165,9 @@ class AutoBuild_main_app:
                 # ["streamlit_app.py:."],
                 ["src:src"],
                 ["src/ui:src/ui"],
-                ["pyproject.toml:pyproject.toml"],
                 ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
+                ["pyproject.toml:."],
+                ["plugins/ps_of_py/pyproject.toml:plugins/ps_of_py/"],
             ],
             add_binary=[],
             # hidden_import=[

@@ -38,7 +38,14 @@ class Plugins_Manager:
         plugins_dict = {}
 
         for plugin in plugins_list:
-            pyproject_toml = Config_reader([f"{plugin_dir}/{plugin}/pyproject.toml"])
+            pyproject_toml = Config_reader(
+                [
+                    f"{plugin_dir}/{plugin}/pyproject.toml",
+                    f"{sys._MEIPASS}/{plugin_dir}/{plugin}/pyproject.toml"  # type: ignore
+                    if hasattr(sys, "_MEIPASS")
+                    else None,
+                ]
+            )
             plugins_dict[plugin] = {
                 "icon": "🧩",
                 "name": pyproject_toml["project"]["name"],
