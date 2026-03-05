@@ -2,6 +2,7 @@ import streamlit as st
 
 # from streamlit import session_state as ss
 from src.app import App
+from src.manager.plugins_manager import Plugins_Manager
 from src.ui.window import window_setting
 
 # from streamlit_cookies_controller import CookieController
@@ -22,23 +23,18 @@ def st_sidebar():
     with st.sidebar.container(border=True):
         window_setting()
 
-    # 版权信息
-    columns = st.sidebar.columns([1, 1], vertical_alignment="center")
-    columns[0].image("assets//images/©.png", width=150)
-    columns[1].caption(
-        "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
-    )
-
     st.sidebar.badge(App.name + " -> " + App.version, icon="📦", color="green")
     st.sidebar.badge("v->" + str(App.latestinfo["version"]), icon="🏷️", color="violet")
     st.sidebar.badge("t->" + App.mtime, icon="🏷️", color="blue")
 
     st.sidebar.caption(App.description)
 
+    with st.sidebar.popover("Plugins_Info"):
+        for k, v in Plugins_Manager().load_plugins().items():
+            st.badge(f"{k} -> {v['version']}", icon=v["icon"])
     with st.sidebar.popover("Modules_Info"):
         for k, v in App.hidden_import.items():
             st.badge(f"{k} -> {v}", icon="📦")
-
     with st.sidebar.popover("Cache_Manager"):
         st.button(
             "⚙️Clear_cache_res",
@@ -53,3 +49,9 @@ def st_sidebar():
             # on_click=lambda: authenticator.cookie_controller.delete_cookie(),
             # on_click=lambda: controller.remove("cookies"),
         )
+    # 版权信息
+    columns = st.sidebar.columns([1, 1], vertical_alignment="center")
+    columns[0].image("assets//images/©.png", width=150)
+    columns[1].caption(
+        "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
+    )
