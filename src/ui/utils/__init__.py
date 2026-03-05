@@ -21,30 +21,6 @@ def st_markdown(markdown_string):
             st.image(part, width="content")
 
 
-def st_folder_picker(name: str = "选择文件夹", button_icon=None) -> Path:
-    # Import tkinter
-    import tkinter as tk
-    from tkinter import filedialog
-
-    # Set up tkinter
-    root = tk.Tk()
-    root.withdraw()
-    root.wm_attributes("-topmost", 1)
-
-    clicked = st.button(label=name, key=name, icon=button_icon if button_icon else None)
-    # st.badge(ss.get(f"{name}_folder_path", os.getcwd()), icon="📁")
-    if clicked:
-        dir_path = filedialog.askdirectory(
-            master=root,  # type: ignore
-        )
-        if dir_path == "":
-            return Path(ss.get(f"{name}_folder_path", os.getcwd()))
-        ss[f"{name}_folder_path"] = dir_path
-        return Path(dir_path)
-
-    return Path(ss.get(f"{name}_folder_path", os.getcwd()))
-
-
 def st_file_picker(name: str = "选择文件", button_icon=None) -> Path:
     # Import tkinter
 
@@ -69,3 +45,27 @@ def st_file_picker(name: str = "选择文件", button_icon=None) -> Path:
         return Path(dir_path)
 
     return Path(ss.get(f"{name}_file_path", os.getcwd()))
+
+
+def st_folder_picker(name: str = "选择文件夹", button_icon=None) -> Path:
+    # Import tkinter
+    import tkinter as tk
+    from tkinter import filedialog
+
+    # Set up tkinter
+    root = tk.Tk()
+    root.withdraw()
+    root.wm_attributes("-topmost", 1)
+
+    clicked = st.button(label=name, key=name, icon=button_icon if button_icon else None)
+    # st.badge(ss.get(f"{name}_folder_path", os.getcwd()), icon="📁")
+    if clicked:
+        dir_path = filedialog.askdirectory(
+            master=root,  # type: ignore
+        )
+        if dir_path == "":
+            return Path(ss.get(f"{name}_folder_path", os.getcwd()))
+        ss[f"{name}_folder_path"] = dir_path
+        return Path(dir_path)
+
+    return Path(ss.get(f"{name}_folder_path", os.getcwd()))
