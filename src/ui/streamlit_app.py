@@ -15,7 +15,7 @@ st.set_page_config(
 
 st.logo(
     image="https://irx999.fun/img/tx1.jpg",
-    link="https://irx999.fun/",
+    link="https://github.com/irx999",
     icon_image="https://irx999.fun/img/tx1.jpg",
 )
 
