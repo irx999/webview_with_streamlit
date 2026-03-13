@@ -168,6 +168,8 @@ class AutoBuild_main_app:
                 ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
                 ["pyproject.toml:."],
                 ["plugins/ps_of_py/pyproject.toml:plugins/ps_of_py/"],
+                ["plugins/ps_of_py/CHANGELOG.md:plugins/ps_of_py/"],
+                ["plugins/ps_of_py/README.md:plugins/ps_of_py/"],
             ],
             add_binary=[],
             # hidden_import=[

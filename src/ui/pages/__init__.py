@@ -66,5 +66,15 @@ PAGES: dict[str, list[Any]] = {
             title="主界面",
             icon="🎨",
         ),
+        st.Page(
+            get_path("plugins/ps_of_py/src/ui/ps_of_py_readme.py"),
+            title="README.md",
+            icon="📄",
+        ),
+        st.Page(
+            get_path("plugins/ps_of_py/src/ui/ps_of_py_changelog.py"),
+            title="CHANGELOG.md",
+            icon="🔄",
+        ),
     ],
 }
