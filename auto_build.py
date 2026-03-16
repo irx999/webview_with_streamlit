@@ -165,11 +165,12 @@ class AutoBuild_main_app:
                 # ["streamlit_app.py:."],
                 ["src:src"],
                 ["src/ui:src/ui"],
-                ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
                 ["pyproject.toml:."],
+                # 插件  ps_of_py
+                ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
                 ["plugins/ps_of_py/pyproject.toml:plugins/ps_of_py/"],
-                ["plugins/ps_of_py/CHANGELOG.md:plugins/ps_of_py/"],
                 ["plugins/ps_of_py/README.md:plugins/ps_of_py/"],
+                ["plugins/ps_of_py/CHANGELOG.md:plugins/ps_of_py/"],
             ],
             add_binary=[],
             # hidden_import=[
@@ -311,10 +312,9 @@ class AutoBuild_update_app:
 
 
 if __name__ == "__main__":
-    mode = input(
-        "❓Auto_build mode: \n 🌟 1: main \n 🌟 2: update \n Plese input mode:"
-    )
-    match mode:
+    match input(
+        "❓Auto_build mode: \n 🌟 1: main \n 🌟 2: update\n 🌟 3: 常用 \n Plese input mode:"
+    ):
         case "" | None:
             sys.exit()
         case "1":
@@ -325,8 +325,15 @@ if __name__ == "__main__":
                 need_debug_console=need_debug_console,
                 need_compress=need_compress,
             )
+
         case "2":
             AutoBuild_update_app.main()
+
+        case "3":
+            AutoBuild_main_app.main(
+                need_debug_console=False,
+                need_compress=True,
+            )
 
     dist_full_path = os.path.join(os.getcwd(), "dist")
     os.startfile(dist_full_path)
