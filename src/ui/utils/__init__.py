@@ -21,7 +21,9 @@ def st_markdown(markdown_string):
             st.image(part, width="content")
 
 
-def st_file_picker(name: str = "选择文件", button_icon=None, filetypes=None) -> Path:
+def st_file_picker(
+    name: str = "选择文件", button_icon=None, filetypes=None, initialfile=None
+) -> Path:
     # Import tkinter
 
     import tkinter as tk
@@ -39,6 +41,7 @@ def st_file_picker(name: str = "选择文件", button_icon=None, filetypes=None)
             master=root,  # type: ignore
             initialdir=os.getcwd(),
             filetypes=filetypes if filetypes else [("All Files", "*.*")],
+            initialfile=initialfile,
         )
         if dir_path == "":
             return Path(ss.get(f"{name}_file_path", os.getcwd()))
