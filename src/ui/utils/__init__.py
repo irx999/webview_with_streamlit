@@ -22,7 +22,7 @@ def st_markdown(markdown_string):
 
 
 def st_file_picker(
-    name: str = "选择文件", button_icon=None, filetypes=None, default: str = None
+    name: str = "选择文件", button_icon=None, filetypes=None, default: str = os.getcwd()
 ) -> Path:
     # Import tkinter
 
@@ -49,11 +49,11 @@ def st_file_picker(
 
         return Path(dir_path)
 
-    return Path(default) if default else Path(os.getcwd())
+    return Path(default)
 
 
 def st_folder_picker(
-    name: str = "选择文件夹", button_icon=None, default: str = None
+    name: str = "选择文件夹", button_icon=None, default: str = os.getcwd()
 ) -> Path:
     # Import tkinter
     import tkinter as tk
@@ -76,4 +76,4 @@ def st_folder_picker(
         ss[f"{name}_folder_path"] = dir_path
         return Path(dir_path)
 
-    return Path(default) if default else Path(os.getcwd())
+    return Path(default)
