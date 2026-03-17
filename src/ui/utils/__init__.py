@@ -22,7 +22,7 @@ def st_markdown(markdown_string):
 
 
 def st_file_picker(
-    name: str = "选择文件", button_icon=None, filetypes=None, initialfile=None
+    name: str = "选择文件", button_icon=None, filetypes=None, default: str = None
 ) -> Path:
     # Import tkinter
 
@@ -41,7 +41,7 @@ def st_file_picker(
             master=root,  # type: ignore
             initialdir=os.getcwd(),
             filetypes=filetypes if filetypes else [("All Files", "*.*")],
-            initialfile=initialfile,
+            initialfile=default,
         )
         if dir_path == "":
             return Path(ss.get(f"{name}_file_path", os.getcwd()))
@@ -49,10 +49,12 @@ def st_file_picker(
 
         return Path(dir_path)
 
-    return Path(ss.get(f"{name}_file_path", os.getcwd()))
+    return Path(default) if default else Path(os.getcwd())
 
 
-def st_folder_picker(name: str = "选择文件夹", button_icon=None) -> Path:
+def st_folder_picker(
+    name: str = "选择文件夹", button_icon=None, default: str = None
+) -> Path:
     # Import tkinter
     import tkinter as tk
     from tkinter import filedialog
@@ -67,11 +69,11 @@ def st_folder_picker(name: str = "选择文件夹", button_icon=None) -> Path:
     if clicked:
         dir_path = filedialog.askdirectory(
             master=root,  # type: ignore
-            initialdir=os.getcwd(),
+            initialdir=default,
         )
         if dir_path == "":
             return Path(ss.get(f"{name}_folder_path", os.getcwd()))
         ss[f"{name}_folder_path"] = dir_path
         return Path(dir_path)
 
-    return Path(ss.get(f"{name}_folder_path", os.getcwd()))
+    return Path(default) if default else Path(os.getcwd())
