@@ -1,17 +1,8 @@
-import os
-
 from src.ui.utils import st_markdown
+from src.utils import get_resource_path
 
 if __name__ == "__main__":
-    possible_paths = [
-        "CHANGELOG.md",
-        "assets/CHANGELOG.md",
-    ]
-
-    for path in possible_paths:
-        if os.path.exists(path):
-            FILE_PATH = path
-            break
+    FILE_PATH = get_resource_path(["CHANGELOG.md", "assets/CHANGELOG.md"])
 
     with open(FILE_PATH, "r", encoding="utf-8") as f:
         readme_text = f.read()
