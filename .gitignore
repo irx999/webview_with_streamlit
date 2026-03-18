@@ -13,3 +13,5 @@ logs/
 *temp
 
 *plugins
+*测试文件
+config.json

@@ -6,15 +6,16 @@ import PIL
 import xlwings
 from loguru import logger
 
-# logger.add("logs/app.log", format="{time} {level} {message}")
+logger.add("logs/app.log", format="{time} {level} {message}")
 
 
 def load_hidden_import():
+    """加载隐藏的导入"""
     logger.info("load_hidden_import")
 
     import_dict = {
         tkinter.__name__: tkinter.TkVersion,
-        filedialog.__name__: "8.6",
+        filedialog.__name__: tkinter.TkVersion,
         xlwings.__name__: xlwings.__version__,
         photoshop.__name__: "0.24.1",
         PIL.__name__: PIL.__version__,

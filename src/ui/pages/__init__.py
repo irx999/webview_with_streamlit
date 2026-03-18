@@ -54,12 +54,27 @@ PAGES: dict[str, list[Any]] = {
             title="测试页2",
             icon="🧪",
         ),
+        st.Page(
+            HP + "Test/update_test.py",
+            title="update_test",
+            icon="🧪",
+        ),
     ],
     "🎨PS自动化": [
         st.Page(
             get_path("plugins/ps_of_py/src/ui/main.py"),
             title="主界面",
             icon="🎨",
+        ),
+        st.Page(
+            get_path("plugins/ps_of_py/src/ui/ps_of_py_readme.py"),
+            title="README.md",
+            icon="📄",
+        ),
+        st.Page(
+            get_path("plugins/ps_of_py/src/ui/ps_of_py_changelog.py"),
+            title="CHANGELOG.md",
+            icon="🔄",
         ),
     ],
 }

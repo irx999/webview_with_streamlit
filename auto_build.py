@@ -165,8 +165,12 @@ class AutoBuild_main_app:
                 # ["streamlit_app.py:."],
                 ["src:src"],
                 ["src/ui:src/ui"],
-                ["pyproject.toml:pyproject.toml"],
+                ["pyproject.toml:."],
+                # 插件  ps_of_py
                 ["plugins/ps_of_py/src:plugins/ps_of_py/src"],
+                ["plugins/ps_of_py/pyproject.toml:plugins/ps_of_py/"],
+                ["plugins/ps_of_py/README.md:plugins/ps_of_py/"],
+                ["plugins/ps_of_py/CHANGELOG.md:plugins/ps_of_py/"],
             ],
             add_binary=[],
             # hidden_import=[
@@ -230,14 +234,19 @@ class AutoBuild_main_app:
                     f"{options.distpath}/latest.json",
                     f"{pack_path}/assets/latest.json",
                 )
-                shutil.copy(
+
+                file_list = [
                     "README.md",
-                    f"{pack_path}/assets/README.md",
-                )
-                shutil.copy(
+                    "CHANGELOG.md",
                     "pyproject.toml",
-                    f"{pack_path}/assets/pyproject.toml",
-                )
+                ]
+
+                for file in file_list:
+                    shutil.copy2(
+                        file,
+                        f"{pack_path}/assets/",
+                    )
+
             except Exception as e:
                 print(f"\n ❌️ Failing... {e}.")
 
@@ -308,13 +317,22 @@ class AutoBuild_update_app:
 
 
 if __name__ == "__main__":
-    mode = input(
-        "❓Auto_build mode: \n 🌟 1: main \n 🌟 2: update \n Plese input mode:"
-    )
+    num_mode = {
+        0: "None",
+        1: "main",
+        2: "update",
+        3: "打包并开启控制台测试",
+        4: "打包并提供压缩包",
+    }
+
+    print("❓Auto_build mode:")
+    for i in range(1, 5):
+        print(f"🌟 {i}: {num_mode[i]}")
+    mode = num_mode.get(int(input("Plese input mode:")), None)
     match mode:
-        case "" | None:
+        case None:
             sys.exit()
-        case "1":
+        case "main":
             need_debug_console = input("❓Need_debug_console: [y/n][1/2]") in ["y", "1"]
 
             need_compress = input("❓Need_compress?: [y/n][1/2]") in ["y", "1"]
@@ -322,8 +340,20 @@ if __name__ == "__main__":
                 need_debug_console=need_debug_console,
                 need_compress=need_compress,
             )
-        case "2":
+
+        case "update":
             AutoBuild_update_app.main()
+
+        case "打包并开启控制台测试":
+            AutoBuild_main_app.main(
+                need_debug_console=True,
+                need_compress=False,
+            )
+        case "打包并提供压缩包":
+            AutoBuild_main_app.main(
+                need_debug_console=False,
+                need_compress=True,
+            )
 
     dist_full_path = os.path.join(os.getcwd(), "dist")
     os.startfile(dist_full_path)
