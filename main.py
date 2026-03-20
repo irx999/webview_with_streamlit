@@ -2,10 +2,14 @@ import argparse
 import os
 import sys
 
-import webview
 from loguru import logger
 
-from src.app import start_fastapi, start_streamlit, start_webview
+from src.app import (
+    ensure_shortcut_in_start_menu_and_desktop,
+    start_fastapi,
+    start_streamlit,
+    start_webview,
+)
 
 logger.add("logs/app.log", format="{time} {level} {message}")
 
@@ -19,9 +23,9 @@ def main(debug_mode: bool = False):
         logger.info(f"Start succes -> {fastapi_app.name}")
 
         webview_app = start_webview(debug_mode)
-        logger.info(f"Start succes -> {webview_app.name}")  # type: ignore #
 
-        logger.info(f"Starting -> {webview.__name__}")
+        # logger.info(f"Start succes -> {webview_app.name}")  # type: ignore #
+        # logger.info(f"Starting -> {webview.__name__}")
 
         # 这里好像不需要这个东西
         # webview.start()
@@ -49,6 +53,8 @@ def main(debug_mode: bool = False):
 
 
 if __name__ == "__main__":
+    # 检查单实例
+
     if getattr(sys, "frozen", False):
         sys.path.append(os.path.dirname(sys.executable))
         # 原来的方案
@@ -59,6 +65,9 @@ if __name__ == "__main__":
 
         logger.info(f"Runing in {main_working_dir} by fozen")
 
+        # 创建快捷方式
+        ensure_shortcut_in_start_menu_and_desktop()
+        # 启动
         main()
     else:
         logger.info(f"Runing in {os.getcwd()} by uv")
@@ -80,6 +89,7 @@ if __name__ == "__main__":
             logger.warning("Invalid password")
             sys.exit(0)
 
+        # 启动
         main(
             debug_mode=args.debug,
         )

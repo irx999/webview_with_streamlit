@@ -321,7 +321,7 @@ if __name__ == "__main__":
         0: "None",
         1: "main",
         2: "update",
-        3: "打包并开启控制台测试",
+        3: "打包",
         4: "打包并提供压缩包",
     }
 
@@ -344,9 +344,9 @@ if __name__ == "__main__":
         case "update":
             AutoBuild_update_app.main()
 
-        case "打包并开启控制台测试":
+        case "打包":
             AutoBuild_main_app.main(
-                need_debug_console=True,
+                need_debug_console=False,
                 need_compress=False,
             )
         case "打包并提供压缩包":

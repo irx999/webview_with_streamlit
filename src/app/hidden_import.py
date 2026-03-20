@@ -4,14 +4,10 @@ from tkinter import filedialog
 import photoshop
 import PIL
 import xlwings
-from loguru import logger
-
-logger.add("logs/app.log", format="{time} {level} {message}")
 
 
 def load_hidden_import():
     """加载隐藏的导入"""
-    logger.info("load_hidden_import")
 
     import_dict = {
         tkinter.__name__: tkinter.TkVersion,
@@ -21,6 +17,4 @@ def load_hidden_import():
         PIL.__name__: PIL.__version__,
     }
 
-    for name, version in import_dict.items():
-        logger.info(f"{name}: {version}")
     return import_dict
