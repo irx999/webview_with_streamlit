@@ -1,27 +1,10 @@
-import os
-import sys
 from typing import Any
 
 import streamlit as st
 
+from ..utils import get_path
 
-def get_script_path() -> str:
-    script_path = "src/ui/pages/"
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, script_path)  # type: ignore
-    else:
-        return os.path.join(os.getcwd(), script_path)
-
-
-def get_path(path) -> str:
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, path)  # type: ignore
-    else:
-        return os.path.join(os.getcwd(), path)
-
-
-HP = get_script_path()
-
+HP = get_path("src/ui/pages/")
 
 PAGES: dict[str, list[Any]] = {
     "🏠Home": [
@@ -60,21 +43,11 @@ PAGES: dict[str, list[Any]] = {
             icon="🧪",
         ),
     ],
-    "🎨PS自动化": [
-        st.Page(
-            get_path("plugins/ps_of_py/src/ui/main.py"),
-            title="主界面",
-            icon="🎨",
-        ),
-        st.Page(
-            get_path("plugins/ps_of_py/src/ui/ps_of_py_readme.py"),
-            title="README.md",
-            icon="📄",
-        ),
-        st.Page(
-            get_path("plugins/ps_of_py/src/ui/ps_of_py_changelog.py"),
-            title="CHANGELOG.md",
-            icon="🔄",
-        ),
-    ],
 }
+try:
+    from plugins.ps_of_py.src.ui import pages
+
+    PAGES |= pages
+
+except ImportError as e:
+    print(f"未找到插件{e}")
