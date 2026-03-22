@@ -33,8 +33,8 @@ PAGES: dict[str, list[Any]] = {
             icon="🧪",
         ),
         st.Page(
-            HP + "Test/test_b.py",
-            title="测试页2",
+            HP + "Test/test_excle.py",
+            title="excel 测试页",
             icon="🧪",
         ),
         st.Page(

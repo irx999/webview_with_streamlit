@@ -1,3 +1,4 @@
+README.md
 ![banner](./assets/images/Banner3-large-cn.png)
 
 
@@ -44,8 +45,8 @@ uv run main.py
 ### 打包为可执行文件
 
 ```bash
-# 安装开发依赖
-uv run  auto_build.py
+# 构建应用
+uv run auto_build.py
 
 # 将自动使用 PyInstaller 打包
 ```
@@ -60,18 +61,39 @@ uv run  auto_build.py
 ├── auto_build.py           # 自动构建脚本
 ├── updater.py              # 更新脚本
 ├── pyproject.toml          # 项目配置文件
+├── CHANGELOG.md            # 版本变更日志
+├── README.md               # 项目说明文档
 ├── src/
 │   ├── app/
+│   │   ├── __init__.py
+│   │   ├── app_info.py     # 应用信息
+│   │   ├── app_utils.py    # 应用工具
+│   │   ├── hidden_import.py # 隐藏导入（打包用）
 │   │   └── start_app.py    # 应用启动逻辑
 │   ├── fast_api/           # FastAPI 后端服务
-│   │   ├── fastapi_app.py
-│   │   └── api/v1/
+│   │   ├── api/v1/
+│   │   │   └── main.py     # API 主路由
+│   │   └── fastapi_app.py  # FastAPI 应用实例
+│   ├── manager/            # 插件管理器
+│   │   └── plugins_manager.py
 │   ├── ui/                 # Streamlit UI 组件
-│   │   ├── sidebar.py
-│   │   └── pages/
-│   └── test/
+│   │   ├── __init__.py
+│   │   ├── sidebar.py      # 侧边栏组件
+│   │   ├── streamlit_app.py # Streamlit 主应用
+│   │   ├── test.py         # 测试页面
+│   │   ├── window.py       # 窗口控制
+│   │   ├── pages/          # 页面组件
+│   │   └── utils/          # UI 工具函数
+│   └── utils/              # 通用工具函数
+│       ├── __init__.py
+│       ├── config_manager.py # 配置管理
+│       └── config_reader.py  # 配置读取
+├── plugins/                # 插件目录示例
 ├── assets/                 # 静态资源文件
-└── logs/                   # 日志目录
+│   ├── config.json         # 应用配置
+│   └── latest.json         # 最新版本信息
+├── test/                   # 测试文件
+└── logs/                   # 日志目录（如果启用）
 ```
 
 ## 🧩 功能模块
@@ -79,7 +101,7 @@ uv run  auto_build.py
 ### 主要页面
 
 1. **主页** - 欢迎页面
-2. **功能测试** - 测试页面集合
+2. **功能测试** - 测试页面集合 (Test A, Test B)
 
 ### 核心功能
 
@@ -87,12 +109,16 @@ uv run  auto_build.py
 - 缓存管理
 - 窗口大小调整 API
 - 多页面导航
+- 插件管理 (实验性)
+- 应用更新检查
 
 ## ⚙️ 配置说明
 
 应用使用以下端口：
-- Streamlit: 38501
-- FastAPI: 38000
+- Streamlit: 8501
+- FastAPI: 8000
+
+> 注意：在某些情况下，端口可能会自动调整为其他可用端口，如 38501 和 38000。
 
 ## 🛠️ 开发指南
 
@@ -100,12 +126,36 @@ uv run  auto_build.py
 
 1. 在 `src/ui/pages/` 下创建新的目录
 2. 添加页面文件（如 `new_page.py`）
-3. 在 `src/ui/pages/__init__.py` 的 [PAGES] 列表中添加新页面
+3. 在 `src/ui/pages/Home/` 或 `src/ui/pages/Test/` 中添加页面入口
 
 ### 添加新的 API
 
-1. 在 `src/fast_api/api/v1/` 下创建新的模块
+1. 在 `src/fast_api/api/v1/pywebview/` 下创建新的模块
 2. 在 `src/fast_api/api/v1/main.py` 中引入并注册路由
 
-## 📄 许可证
+### 自定义 UI 组件
+
+1. 在 `src/ui/utils/` 中添加自定义组件
+2. 参考 [streamlit's api-reference](https://docs.streamlit.io/develop/api-reference)
+## 🧪 测试
+
+运行单元测试：
+```bash
+uv run pytest test/
+```
+
+## 📦 发布
+
+每次发布前，请确保：
+1. 更新 `CHANGELOG.md` 中的版本记录
+2. 更新 `assets/latest.json` 中的版本信息
+3. 运行所有测试确保功能正常
+4. 执行 `uv run auto_build.py` 创建新版本
+
+## 🤝 贡献
+
+欢迎提交 issue 和 pull request！在提交之前，请确保：
+1. 代码遵循 PEP8 规范
+2. 添加适当的测试
+3. 更新相关文档
 
