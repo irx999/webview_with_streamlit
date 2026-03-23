@@ -64,17 +64,4 @@ def st_sidebar():
 
 @st.dialog("App设置", width="small", icon="⚙️")
 def app_setting():
-    st.badge("快捷方式", icon="⚙️")
-
-    c1 = st.columns(2)
-
-    create_desktop_shortcut = c1[1].toggle("创建桌面快捷方式", value=True)
-
-    if c1[0].button("重设快捷方式"):
-        try:
-            from src.app.app_utils import ensure_shortcut_in_start_menu_and_desktop
-
-            path = ensure_shortcut_in_start_menu_and_desktop(create_desktop_shortcut)
-            st.toast(f"重设成功 {path}", icon="✅")
-        except Exception as e:
-            st.toast(e, icon="❌")
+    pass
