@@ -20,7 +20,7 @@ def st_sidebar():
     # else:
     #     st.sidebar.success(f"**当前登录权限:**   {ss.get('roles', '未知权限')}")
     #  窗口调节
-    with st.sidebar.container(border=True):
+    with st.sidebar.expander("窗口设置", expanded=True):
         window_setting()
 
     st.sidebar.badge(App.name + " -> " + App.version, icon="📦", color="green")
@@ -28,6 +28,9 @@ def st_sidebar():
     st.sidebar.badge("t->" + App.mtime, icon="🏷️", color="blue")
 
     st.sidebar.caption(App.description)
+
+    if st.sidebar.button("App设置", icon="⚙️"):
+        app_setting()
 
     with st.sidebar.popover("Plugins_Info"):
         for k, v in Plugins_Manager().load_plugins().items():
@@ -57,3 +60,21 @@ def st_sidebar():
     columns[1].caption(
         "Developed by [irx999](https://github.com/irx999)  \n All rights reserved"
     )
+
+
+@st.dialog("App设置", width="small", icon="⚙️")
+def app_setting():
+    st.badge("快捷方式", icon="⚙️")
+
+    c1 = st.columns(2)
+
+    create_desktop_shortcut = c1[1].toggle("创建桌面快捷方式", value=True)
+
+    if c1[0].button("重设快捷方式"):
+        try:
+            from src.app.app_utils import ensure_shortcut_in_start_menu_and_desktop
+
+            path = ensure_shortcut_in_start_menu_and_desktop(create_desktop_shortcut)
+            st.toast(f"重设成功 {path}", icon="✅")
+        except Exception as e:
+            st.toast(e, icon="❌")

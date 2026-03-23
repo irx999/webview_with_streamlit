@@ -150,5 +150,9 @@ def ensure_shortcut_in_start_menu_and_desktop(create_desktop_shortcut: bool = Tr
             #     os.remove(desktop_shortcut_path)
             pass
 
+        return (
+            start_menu_shortcut_path,
+            desktop_shortcut_path,
+        )
     except Exception as e:
         print(f"创建快捷方式时发生错误：{e}")

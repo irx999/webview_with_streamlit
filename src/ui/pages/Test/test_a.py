@@ -1,5 +1,9 @@
 import streamlit as st
 
+from src.utils.config_manager import ConfigManager
+
+app_config = ConfigManager("assets/config.json", "app_config")
+
 
 def test_a():
     st.header("hello world")
@@ -14,6 +18,8 @@ def test_a():
             if file.suffix in [".jpg", ".png"]:  # 确保是图片文件
                 st.write(file.name)
                 st.image(str(file), width=200)
+
+    app_config.set("123", st.toggle("保存"))
 
 
 if __name__ == "__main__":

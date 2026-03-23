@@ -5,7 +5,7 @@ import sys
 from loguru import logger
 
 from src.app import (
-    ensure_shortcut_in_start_menu_and_desktop,
+    init,
     start_fastapi,
     start_streamlit,
     start_webview,
@@ -16,9 +16,12 @@ logger.add("logs/app.log", format="{time} {level} {message}")
 
 def main(debug_mode: bool = False):
     try:
+        # 初始化
+        init()
+        # 启动 streamlit
         streamlit_app = start_streamlit(debug_mode)
         logger.info(f"Start succes -> {streamlit_app.name}")
-
+        # 启动 fastapi
         fastapi_app = start_fastapi(debug_mode)
         logger.info(f"Start succes -> {fastapi_app.name}")
 
@@ -65,8 +68,6 @@ if __name__ == "__main__":
 
         logger.info(f"Runing in {main_working_dir} by fozen")
 
-        # 创建快捷方式
-        ensure_shortcut_in_start_menu_and_desktop()
         # 启动
         main()
     else:
