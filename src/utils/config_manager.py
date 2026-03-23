@@ -10,6 +10,10 @@ import os
 import tomllib
 from typing import Any, Dict
 
+from loguru import logger
+
+logger.add("logs/config.log", rotation="1 MB")
+
 
 class ConfigManager:
     """配置信息读取与写入类
@@ -61,7 +65,9 @@ class ConfigManager:
             key (str): 配置项键名
             value (Any): 配置项的值
         """
+        old_value = self.config.get(key)
         self.config[key] = value
+        logger.info(f"配置项 {key} : {old_value} --> {value}")
         self.save()
 
     def update(self, config_dict: Dict[str, Any]) -> None:
@@ -71,6 +77,15 @@ class ConfigManager:
         Args:
             config_dict (Dict[str, Any]): 包含多个配置项的字典
         """
+        # 记录即将更新的配置项及其变化
+        for key, value in config_dict.items():
+            old_value = self.config.get(key)
+            if key in self.config:
+                if old_value != value:
+                    logger.info(f"配置项 {key} : {old_value} --> {value}")
+            else:
+                logger.info(f"新增配置项 {key} : {value}")
+
         self.config.update(config_dict)
         self.save()
 
@@ -131,6 +146,7 @@ class ConfigManager:
             value (Any): 配置项的值
         """
         self.config[key] = value
+        logger.info(f"已设置 {key} 的值为 {value}")
         self.save()
 
     def __len__(self) -> int:

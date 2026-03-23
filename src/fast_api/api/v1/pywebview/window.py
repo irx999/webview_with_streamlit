@@ -25,7 +25,7 @@ async def resize_window_get(
         if hasattr(window, property):
             # 直接返回属性值，保持原始类型（包括布尔值）
             value = getattr(window, property)
-            logger.info(f"{property} -> {value}")
+            # logger.debug(f"{property} -> {value}")
             return {"status": "success", "data": value}
         else:
             return {"status": "error", "data": "Property not found"}
