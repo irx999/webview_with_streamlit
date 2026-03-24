@@ -201,7 +201,7 @@ class AutoBuildMainApp:
                     pyi_args.extend(arg_group)
 
             print(f"\n🚀 开始构建：{options.name} (v{options.version})")
-            print(f"⚙️  PyInstaller 参数：{pyi_args}\n")
+            print(f"\n⚙️ PyInstaller 参数：{pyi_args}\n")
 
             PyInstaller.__main__.run(pyi_args)
 
@@ -337,7 +337,8 @@ def main_entry():
         1: "构建主程序 (Main)",
         2: "构建更新程序 (Update)",
         3: "快速打包 (无控制台，无压缩)",
-        4: "完整打包 (无控制台，含压缩)",
+        4: "测试打包 (带控制台，无压缩)",
+        5: "完整打包 (无控制台，含压缩)",
     }
 
     print("\n❓ 请选择构建模式:")
@@ -345,7 +346,7 @@ def main_entry():
         print(f"   {key}: {value}")
 
     try:
-        choice = int(input("请输入选项编号 (1-4): "))
+        choice = int(input("请输入选项编号 (1-5): "))
     except ValueError:
         print("无效输入，退出。")
         sys.exit(1)
@@ -369,6 +370,9 @@ def main_entry():
         AutoBuildMainApp.main(need_debug_console=False, need_compress=False)
 
     elif choice == 4:
+        AutoBuildMainApp.main(need_debug_console=True, need_compress=False)
+
+    elif choice == 5:
         AutoBuildMainApp.main(need_debug_console=False, need_compress=True)
 
     else:

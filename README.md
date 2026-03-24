@@ -1,4 +1,3 @@
-README.md
 ![banner](./assets/images/Banner3-large-cn.png)
 
 

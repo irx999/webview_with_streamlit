@@ -19,9 +19,9 @@ def get_resource_path(relative_path: list[str] | str):
     except AttributeError:
         # 正常开发环境下，使用当前脚本所在的目录
         base_path = os.path.abspath(".")
+        base_path = os.getcwd()
         # 或者更严谨一点，使用 __file__ (但在某些交互式环境可能失效)
         # base_path = os.path.dirname(os.path.abspath(__file__))
-
     if isinstance(relative_path, str):
         if os.path.exists(os.path.join(base_path, relative_path)):
             return os.path.join(base_path, relative_path)

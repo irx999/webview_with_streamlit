@@ -21,8 +21,6 @@ def main(debug_mode: bool = False):
     fastapi_app = None
 
     try:
-        # 初始化
-        init()
         # 启动 streamlit
         streamlit_app = start_streamlit(debug_mode)
         logger.info(f"Start success -> {streamlit_app.name}")
@@ -69,6 +67,10 @@ if __name__ == "__main__":
         logger.info(f"Running in {main_working_dir} by frozen")
         # 切换工作目录
         os.chdir(main_working_dir)
+
+        # 初始化
+        init()
+
         # 启动
         main()
     else:
@@ -90,7 +92,6 @@ if __name__ == "__main__":
         if not args.start or args.start != "123":
             logger.warning("Invalid password")
             sys.exit(0)
-
         # 启动
         main(
             debug_mode=args.debug,
