@@ -68,7 +68,7 @@ class ConfigManager:
         """
         old_value = self.config.get(key)
         self.config[key] = value
-        logger.info(f"配置项 {key} : {old_value} --> {value}")
+        logger.info(f"{self.config_name} -- {key} : {old_value} --> {value}")
         self.save()
 
     def update(self, config_dict: Dict[str, Any]) -> None:
@@ -83,7 +83,9 @@ class ConfigManager:
             old_value = self.config.get(key)
             if key in self.config:
                 if old_value != value:
-                    logger.info(f"配置项 {key} : {old_value} --> {value}")
+                    logger.info(
+                        f"{self.config_name} -- {key} : {old_value} --> {value}"
+                    )
             else:
                 logger.info(f"新增配置项 {key} : {value}")
 
