@@ -2,8 +2,7 @@ import streamlit as st
 
 from src.utils.config_manager import ConfigManager
 
-app_config = ConfigManager("assets/config.json", "app_config")
-app_config2 = ConfigManager("assets/config.json", "app_config2")
+app_config2 = ConfigManager("assets/config.toml", "app_config2")
 
 
 def test_a():
@@ -20,9 +19,9 @@ def test_a():
                 st.write(file.name)
                 st.image(str(file), width=200)
 
-    app_config.set("第一个", st.toggle("保存"))
+    app_config2.set("第一个", st.toggle("保存"))
     app_config2.set("第二个", st.toggle("保存2"))
-    app_config.set(st.text_input("输入"), st.text_input("输入2"))
+    app_config2.set(st.text_input("输入"), st.text_input("输入2"))
 
 
 if __name__ == "__main__":
