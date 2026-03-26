@@ -119,17 +119,20 @@ def window_setting():
     )
 
     # 窗口状态
-    c2 = st.columns(2)
-    c2[0].toggle(
-        "全屏",
-        on_change=change_window_fullscreen,
-        key="windows_fullscreen",
-    )
-    c2[1].toggle(
-        "置顶",
-        key="windows_on_top",
-        on_change=change_on_top,
-    )
+    with st.container(horizontal=True):
+        # st.space("stretch")
+        st.toggle(
+            "全屏",
+            on_change=change_window_fullscreen,
+            key="windows_fullscreen",
+        )
+        st.space("stretch")
+        st.toggle(
+            "置顶",
+            key="windows_on_top",
+            on_change=change_on_top,
+        )
+        st.space("stretch")
 
 
 if __name__ == "__main__":

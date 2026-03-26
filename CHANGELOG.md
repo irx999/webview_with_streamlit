@@ -2,7 +2,7 @@
 # 更新日志
 
 
-## 0.0.4 <Badge text="最新版" type="tip" />
+## 0.0.5 <Badge text="最新版" type="tip" />
 
 
 ### 🎉新增
