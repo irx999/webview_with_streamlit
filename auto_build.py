@@ -112,18 +112,38 @@ def _copy_assets_to_dist(pack_path: str, dist_path: str) -> None:
 
 
 def _compress_distribution(dist_path: str, name: str, version: str) -> None:
-    """压缩发布目录为 ZIP 文件。"""
+    """压缩发布目录为 ZIP 文件（快速模式）。"""
+    import zipfile
+
     base_name = os.path.join(dist_path, f"{name}-{version}")
     source_dir = os.path.join(dist_path, name)
+    zip_path = f"{base_name}.zip"
 
-    print(f"\n正在压缩发布包 -> {base_name}.zip")
+    print(f"\n正在快速压缩发布包 -> {zip_path}")
+
+    start_time = time.time()
     try:
         if not os.path.exists(source_dir):
             raise FileNotFoundError(f"源目录不存在：{source_dir}")
 
-        archive_path = shutil.make_archive(base_name, "zip", root_dir=source_dir)
-        file_size = os.path.getsize(archive_path)
-        print(f"✅ 压缩成功：{file_size / (1024 * 1024):.2f} MB")
+        # 使用 zipfile 进行快速压缩
+        # compresslevel=1 表示最低压缩级别（最快），compresslevel=0 表示存储模式（无压缩，最快）
+        with zipfile.ZipFile(
+            zip_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1
+        ) as zipf:
+            for root, dirs, files in os.walk(source_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # 计算相对路径（相对于 source_dir）
+                    arcname = os.path.relpath(file_path, source_dir)
+                    zipf.write(file_path, arcname)
+
+        file_size = os.path.getsize(zip_path)
+        elapsed_time = time.time() - start_time
+        print(
+            f"✅ 快速压缩成功：{file_size / (1024 * 1024):.2f} MB (耗时: {elapsed_time:.2f}秒)"
+        )
+
     except Exception as e:
         print(f"❌ 压缩失败：{e}")
 
@@ -343,7 +363,7 @@ def main_entry():
 
     print("\n❓ 请选择构建模式:")
     for key, value in modes.items():
-        print(f"   {key}: {value}")
+        print(f"🌟 {key}: {value}")
 
     try:
         choice = int(input("请输入选项编号 (1-5): "))
@@ -351,33 +371,34 @@ def main_entry():
         print("无效输入，退出。")
         sys.exit(1)
 
-    if choice == 1:
-        # 交互式构建主程序
-        debug_input = input("❓ 是否需要调试控制台？(y/n): ").lower()
-        compress_input = input("❓ 是否需要生成压缩包？(y/n): ").lower()
+    match choice:
+        case 1:
+            # 交互式构建主程序
+            debug_input = input("❓ 是否需要调试控制台？(y/n): ").lower()
+            compress_input = input("❓ 是否需要生成压缩包？(y/n): ").lower()
 
-        need_debug = debug_input in ["y", "yes", "1"]
-        need_compress = compress_input in ["y", "yes", "1"]
+            need_debug = debug_input in ["y", "yes", "1"]
+            need_compress = compress_input in ["y", "yes", "1"]
 
-        AutoBuildMainApp.main(
-            need_debug_console=need_debug, need_compress=need_compress
-        )
+            AutoBuildMainApp.main(
+                need_debug_console=need_debug, need_compress=need_compress
+            )
 
-    elif choice == 2:
-        AutoBuildUpdateApp.main()
+        case 2:
+            AutoBuildUpdateApp.main()
 
-    elif choice == 3:
-        AutoBuildMainApp.main(need_debug_console=False, need_compress=False)
+        case 3:
+            AutoBuildMainApp.main(need_debug_console=False, need_compress=False)
 
-    elif choice == 4:
-        AutoBuildMainApp.main(need_debug_console=True, need_compress=False)
+        case 4:
+            AutoBuildMainApp.main(need_debug_console=True, need_compress=False)
 
-    elif choice == 5:
-        AutoBuildMainApp.main(need_debug_console=False, need_compress=True)
+        case 5:
+            AutoBuildMainApp.main(need_debug_console=False, need_compress=True)
 
-    else:
-        print("无效的选项。")
-        sys.exit(1)
+        case _:
+            print("无效的选项。")
+            sys.exit(1)
 
     # 构建完成后打开 dist 目录
     dist_full_path = os.path.join(os.getcwd(), "dist")
