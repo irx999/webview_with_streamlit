@@ -1,7 +1,7 @@
 """
 配置信息读取与写入模块
 
-支持读取和写入TOML和JSON格式的配置文件，提供配置项的获取和管理功能。
+支持读取和写入 TOML 和 JSON 格式的配置文件，提供配置项的获取和管理功能。
 """
 
 import datetime
@@ -12,14 +12,14 @@ from typing import Any, Dict
 
 
 class Config_reader:
-    """保留原有的Config_reader类以保持向后兼容性"""
+    """保留原有的 Config_reader 类以保持向后兼容性"""
 
     def __init__(self, filename: str | list[str]) -> None:
         """
         初始化配置读取器
 
         Args:
-            filename (str): 配置文件路径
+            filename (str | list[str]): 配置文件路径，可以是单个路径或路径列表（按顺序查找第一个存在的文件）
         """
 
         # 修改: 支持文件列表，按顺序查找第一个存在的文件
@@ -110,4 +110,6 @@ class Config_reader:
                         raise ValueError("不支持的配置文件格式")
 
         except FileNotFoundError:
-            print(f"配置文件 {self.filename}不存在！")
+            print(f"[ConfigReader] 警告：配置文件 {self.filename} 不存在！")
+        except Exception as e:
+            print(f"[ConfigReader] 错误：加载配置文件 {self.filename} 时发生异常：{e}")

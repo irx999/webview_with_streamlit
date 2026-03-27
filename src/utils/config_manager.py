@@ -10,6 +10,7 @@ import os
 import tomllib
 from typing import Any, Dict
 
+import tomli_w
 from loguru import logger
 
 logger.add("logs/config.log", rotation="1 MB")
@@ -67,7 +68,7 @@ class ConfigManager:
         """
         old_value = self.config.get(key)
         self.config[key] = value
-        logger.info(f"配置项 {key} : {old_value} --> {value}")
+        logger.info(f"{self.config_name} -- {key} : {old_value} --> {value}")
         self.save()
 
     def update(self, config_dict: Dict[str, Any]) -> None:
@@ -82,7 +83,9 @@ class ConfigManager:
             old_value = self.config.get(key)
             if key in self.config:
                 if old_value != value:
-                    logger.info(f"配置项 {key} : {old_value} --> {value}")
+                    logger.info(
+                        f"{self.config_name} -- {key} : {old_value} --> {value}"
+                    )
             else:
                 logger.info(f"新增配置项 {key} : {value}")
 
@@ -190,17 +193,31 @@ class ConfigManager:
             if directory:
                 os.makedirs(directory, exist_ok=True)
 
-            with open(self.filename, "w", encoding="utf-8") as f:
-                match self.filename.split(".")[-1]:
-                    case "json":
-                        json.dump(self.all_config, f, indent=4, ensure_ascii=False)
-                    case _:
-                        raise ValueError("不支持的配置文件格式")
+            file_ext = self.filename.split(".")[-1]
+
+            # 默认行为：全量覆盖写入 (适用于 JSON 或 更新失败的 TOML)
+            # 根据文件类型决定打开模式：toml 需要二进制模式 'wb'，json 需要文本模式 'w'
+            mode = "wb" if file_ext == "toml" else "w"
+
+            if mode == "wb":
+                with open(self.filename, mode) as f:
+                    match file_ext:
+                        case "toml":
+                            tomli_w.dump(self.all_config, f)  # type: ignore
+                        case _:
+                            raise ValueError(f"不支持的配置文件格式：.{file_ext}")
+            else:
+                with open(self.filename, mode, encoding="utf-8") as f:
+                    match file_ext:
+                        case "json":
+                            json.dump(self.all_config, f, indent=4, ensure_ascii=False)
+                        case _:
+                            raise ValueError(f"不支持的配置文件格式：.{file_ext}")
 
             # 更新修改时间
             self.mtime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         except Exception as e:
-            print(f"保存配置文件时发生错误: {e}")
+            print(f"保存配置文件时发生错误：{e}")
 
     def delete(self, key: str) -> bool:
         """

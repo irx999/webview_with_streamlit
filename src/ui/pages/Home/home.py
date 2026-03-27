@@ -1,17 +1,18 @@
 import streamlit as st
 
 if __name__ == "__main__":
-    col1, col2 = st.columns([1, 1], border=False, vertical_alignment="center")
+    st.container(height=200, border=False)
 
-    with col1:
-        # 右侧区域 - 您所说的"左下角"容器（实际是页面右侧）
-        # st.container(height=250, border=False)
+    with st.container(border=False, horizontal=True):
+        st.space("stretch")
+
         with st.container(
-            border=False, vertical_alignment="center", horizontal_alignment="center"
+            border=False,
+            vertical_alignment="bottom",
+            horizontal_alignment="left",
+            width=400,
         ):
-            carousel_container = st.container()
-            with carousel_container:
-                st.image("assets/images/Banner3-large-cn.png")
+            carousel_container = st.empty()
             # 三个公告tabs
             tab1, tab2, tab3, tab4 = st.tabs(["None", "None", "None", "None"])
 
@@ -41,5 +42,21 @@ if __name__ == "__main__":
                 - 数据导入指南
                 - 常见问题解答
                 """)
-    with col2:
-        pass
+
+            while True:
+                import time
+
+                from src.app import App
+
+                image_list = [
+                    "./assets/images/Banner3-large-cn.png",
+                    f"https://placehold.co/790x300/4CAF50/white?text={App.name}",
+                    f"https://placehold.co/790x300/2196F3/white?text={App.version}",
+                    f"https://placehold.co/790x300/FF9800/white?text={App.mtime}",
+                ]
+                for i, image_url in enumerate(image_list):
+                    # 显示图片
+                    carousel_container.image(
+                        image_url, link="https://github.com/irx999"
+                    )
+                    time.sleep(2)

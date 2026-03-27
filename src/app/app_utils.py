@@ -92,64 +92,61 @@ def ensure_shortcut_in_start_menu_and_desktop(create_desktop_shortcut: bool = Tr
         shell = win32com.client.Dispatch("WScript.Shell")
 
         # 获取当前脚本或可执行文件的路径
-        # 如果是打包后的 exe，sys.executable 是 exe 路径；如果是源码运行，则是 python 解释器路径 + 脚本参数
         if getattr(sys, "frozen", False):
             # 打包后的环境 (PyInstaller 等)
             app_path = sys.executable
             app_name = Path(app_path).stem
+            script_args = None # 打包后不需要额外参数
         else:
-            # 非打包环境可能需要默认名称，防止未定义错误
-            app_name = "WebViewStreamlitApp"
+            # 非打包环境
+            # 获取当前运行的脚本文件绝对路径
+            script_path = os.path.abspath(sys.argv[0])
+            app_name = Path(script_path).stem
+            # 目标指向 python 解释器
             app_path = sys.executable
+            # 参数指向当前脚本
+            script_args = f'"{script_path}"'
 
         # 确定开始菜单的程序文件夹路径
-        # CSIDL_PROGRAMS 对应的是当前用户的开始菜单 -> 程序
         start_menu_programs = shell.SpecialFolders("Programs")
         shortcut_dir = os.path.join(start_menu_programs, "WebViewStreamlitApp")
         shortcut_filename = f"{app_name}.lnk"
 
-        # 修正：获取桌面路径
+        # 获取桌面路径
         desktop_path = shell.SpecialFolders("Desktop")
 
-        # 修正变量命名：原代码此处赋值的是桌面路径，但变量名叫 start_menu_shortcut_path，容易混淆
-        desktop_shortcut_path = os.path.join(desktop_path, shortcut_filename)
         start_menu_shortcut_path = os.path.join(shortcut_dir, shortcut_filename)
+        desktop_shortcut_path = os.path.join(desktop_path, shortcut_filename)
 
         # 确保目录存在
         if not os.path.exists(shortcut_dir):
             os.makedirs(shortcut_dir)
 
-        # 修改逻辑：不再检查是否存在，直接强制创建/覆盖，以应对程序目录移动导致的路径失效
-        create_start_menu = True
+        # 辅助函数：创建单个快捷方式
+        def create_single_shortcut(shortcut_obj, target_path, working_dir, arguments=None, description_suffix=""):
+            shortcut_obj.Targetpath = target_path
+            shortcut_obj.WorkingDirectory = working_dir
+            if arguments:
+                shortcut_obj.Arguments = arguments
+            # 图标逻辑：如果是打包后的 exe，尝试使用自身；否则使用默认或指定图标
+            # 这里保留原逻辑，但需注意非打包模式下图标会是 python.exe 的图标
+            shortcut_obj.IconLocation = target_path 
+            shortcut_obj.Description = f"Launch WebView with Streamlit {description_suffix}".strip()
+            shortcut_obj.save()
 
         # 创建开始菜单快捷方式 (强制覆盖)
-        if create_start_menu:
-            start_menu_shortcut = shell.CreateShortCut(start_menu_shortcut_path)
-            if getattr(sys, "frozen", False):
-                start_menu_shortcut.Targetpath = app_path
-                start_menu_shortcut.WorkingDirectory = os.path.dirname(app_path)
-            start_menu_shortcut.IconLocation = app_path  # 使用自身图标
-            start_menu_shortcut.Description = "Launch WebView with Streamlit"
-            start_menu_shortcut.save()
-            print(f"开始菜单快捷方式已更新：{start_menu_shortcut_path}")
+        start_menu_shortcut = shell.CreateShortCut(start_menu_shortcut_path)
+        working_dir = os.path.dirname(app_path) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(sys.argv[0]))
+        create_single_shortcut(start_menu_shortcut, app_path, working_dir, script_args)
+        print(f"开始菜单快捷方式已更新：{start_menu_shortcut_path}")
 
         # 控制桌面快捷方式的创建 (如果开启，也强制覆盖)
         if create_desktop_shortcut:
             desktop_shortcut = shell.CreateShortCut(desktop_shortcut_path)
-            if getattr(sys, "frozen", False):
-                desktop_shortcut.Targetpath = app_path
-                desktop_shortcut.WorkingDirectory = os.path.dirname(app_path)
-            desktop_shortcut.IconLocation = app_path  # 使用自身图标
-            desktop_shortcut.Description = "Launch WebView with Streamlit (Desktop)"
-            desktop_shortcut.save()
+            # 桌面快捷方式的工作目录通常设为脚本所在目录，方便读取相对路径资源
+            create_single_shortcut(desktop_shortcut, app_path, working_dir, script_args, "(Desktop)")
             print(f"桌面快捷方式已更新：{desktop_shortcut_path}")
-        else:
-            # 如果明确不创建桌面快捷方式，且存在旧的，可以选择删除以避免误导，这里选择保留但不更新
-            # 若需删除可取消下面注释：
-            # if os.path.exists(desktop_shortcut_path):
-            #     os.remove(desktop_shortcut_path)
-            pass
-
+        
         return (
             start_menu_shortcut_path,
             desktop_shortcut_path,

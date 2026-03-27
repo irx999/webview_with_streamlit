@@ -19,7 +19,8 @@ def test_a():
                 st.write(file.name)
                 st.image(str(file), width=200)
 
-    app_config.set("123", st.toggle("保存"))
+    app_config.set("第一个", st.toggle("保存"))
+    app_config.set(st.text_input("输入"), st.text_input("输入2"))
 
 
 if __name__ == "__main__":

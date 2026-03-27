@@ -1,19 +1,11 @@
 import multiprocessing
-import os
 import sys
 import threading
 
 import webview
 
+from ..utils import get_resource_path
 from .app_info import App, App_fastapi, App_streamlit
-
-
-def get_script_path() -> str:
-    script_path = "src/ui/streamlit_app.py"
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, script_path)  # type: ignore
-    else:
-        return os.path.join(os.getcwd(), script_path)
 
 
 def run_streamlit(script_path: str, options) -> None:
@@ -31,7 +23,7 @@ def start_streamlit(debug_mode: bool = False) -> multiprocessing.Process:
 
     """在单独的线程中启动Streamlit服务器"""
     options = {}
-    script_path = get_script_path()
+    script_path = get_resource_path("src/ui/streamlit_app.py")
     port = App_streamlit.port
 
     options["server.address"] = App_streamlit.host

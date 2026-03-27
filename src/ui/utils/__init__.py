@@ -182,3 +182,30 @@ def get_path2(__file__, file_name) -> str:
 
     # 获取当前文件所在目录，并与目标文件名拼接
     return os.path.join(os.path.dirname(__file__), file_name)
+
+
+def save_uploaded_file(uploaded_file, save_directory):
+    """保存上传的文件到指定目录
+
+    Args:
+        uploaded_file: Streamlit 上传的文件对象，需具有 name 属性和 getbuffer() 方法
+        save_directory (str): 文件保存的目标目录路径
+
+    Returns:
+        Optional[str]: 成功时返回保存的完整文件路径，失败时返回 None
+    """
+    try:
+        # 确保保存目录存在
+        os.makedirs(save_directory, exist_ok=True)
+
+        # 构建完整的文件路径
+        file_path = os.path.join(save_directory, uploaded_file.name)
+
+        # 保存文件
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        return file_path
+    except Exception as e:
+        st.error(f"保存文件时出错: {str(e)}")
+        return None
