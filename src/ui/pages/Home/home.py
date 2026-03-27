@@ -1,25 +1,16 @@
-import time
-
 import streamlit as st
 
 if __name__ == "__main__":
     st.container(height=200, border=False)
-    col1 = st.container(
-        border=False,
-        # vertical_alignment="bottom",
-        # horizontal_alignment="left",
-        horizontal=True,
-    )
 
-    with col1:
+    with st.container(border=False, horizontal=True):
         st.space("stretch")
-        # 右侧区域 - 您所说的"左下角"容器（实际是页面右侧）
-        # st.container(height=250, border=False)
+
         with st.container(
             border=False,
             vertical_alignment="bottom",
             horizontal_alignment="left",
-            width=320,
+            width=400,
         ):
             carousel_container = st.empty()
             # 三个公告tabs
@@ -53,12 +44,15 @@ if __name__ == "__main__":
                 """)
 
             while True:
+                import time
+
                 from src.app import App
 
                 image_list = [
-                    f"https://placehold.co/600x300/4CAF50/white?text={App.name}",
-                    f"https://placehold.co/600x300/2196F3/white?text={App.version}",
-                    f"https://placehold.co/600x300/FF9800/white?text={App.mtime}",
+                    "./assets/images/Banner3-large-cn.png",
+                    f"https://placehold.co/790x300/4CAF50/white?text={App.name}",
+                    f"https://placehold.co/790x300/2196F3/white?text={App.version}",
+                    f"https://placehold.co/790x300/FF9800/white?text={App.mtime}",
                 ]
                 for i, image_url in enumerate(image_list):
                     # 显示图片

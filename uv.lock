@@ -81,7 +81,7 @@ wheels = [
 
 [[package]]
 name = "better-tools"
-version = "0.0.4b0"
+version = "0.0.6b0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },
@@ -103,16 +103,16 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", specifier = ">=0.124.2" },
+    { name = "fastapi", specifier = ">=0.135.2" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "photoshop-python-api", specifier = ">=0.24.1" },
-    { name = "pillow", specifier = ">=12.0.0" },
+    { name = "photoshop-python-api", specifier = ">=0.24.2" },
+    { name = "pillow", specifier = ">=12.1.1" },
     { name = "pywebview", specifier = ">=6.1" },
     { name = "requests", specifier = ">=2.32.5" },
-    { name = "streamlit", specifier = ">=1.52.0" },
+    { name = "streamlit", specifier = ">=1.55.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
-    { name = "uvicorn", specifier = ">=0.38.0" },
-    { name = "xlwings", specifier = ">=0.33.17" },
+    { name = "uvicorn", specifier = ">=0.42.0" },
+    { name = "xlwings", specifier = ">=0.34.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1115,22 +1115,22 @@ wheels = [
 
 [[package]]
 name = "xlwings"
-version = "0.33.22"
+version = "0.34.0"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "appscript", marker = "sys_platform == 'darwin'" },
     { name = "psutil", marker = "sys_platform == 'darwin'" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/b0/1d/e7daa99b3cbf24ff187e3624a214cf9da50f471779f4bc24d4c56cb0796f/xlwings-0.33.22.tar.gz", hash = "sha256:2020e7784af8de3a7d3b0a395b8e769107962813741b569ea2073cc90d958b30", size = 2474171, upload-time = "2026-03-22T09:42:45.087Z" }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/72/41/3147b1acfc5e35d1751e4f315bd76d9561deab73121b6bfb253b57576b58/xlwings-0.34.0.tar.gz", hash = "sha256:9b4259728c5ca9cb91876249c575533045305e94952c9f0d11e71641d4cc8192", size = 2476026, upload-time = "2026-03-26T15:06:13.478Z" }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/cb/60/85f905726568b66fc63054f977632fb5a88c1a1bfc6011c820eb204c29bb/xlwings-0.33.22-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:9ae937c6d95a7496e07f770b26ad0009a0a1048e83fc45c685ec00e61ac2b024", size = 1352437, upload-time = "2026-03-22T09:43:18.427Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/34/7c/7b9c01f55588ca2dfbc4f721b545866e39612eec380c1093b801ca324a4e/xlwings-0.33.22-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:3bfdcb81663c6e5622547c1c68c7345c1840c4d3464d72808655b36539ca4e24", size = 1335596, upload-time = "2026-03-22T09:43:19.671Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/3c/a0/503706140043a9719f796246b8ece4c1734b6d96bf70d1f4bb6af91359da/xlwings-0.33.22-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6dfe5290d0a46bb050c023e961f924a65d53cc89e0a984b02a66cd100b98e747", size = 1393725, upload-time = "2026-03-22T09:43:20.834Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a1/51/756b2be6ca45f6dbcd061f18d6d8429399d3fc8c38fc83a66d7b2d208358/xlwings-0.33.22-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:5bac52276e5582d48c4bb1db5fc33bc49f882b381dea866d3276394a74821ab2", size = 1401879, upload-time = "2026-03-22T09:43:22.015Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/32/1c/d40c45c3d1cddbfeae50317a6e642f3567031c481cc160a673620588cc22/xlwings-0.33.22-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:143ba424ad1560c2c6161ad4a918229d9d4bc43e27dd5350ebed3e5fd763ff17", size = 1405114, upload-time = "2026-03-22T09:43:23.598Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/76/b3/8dc69e8a40a395e80e4c74ade6a38c207373789e8545d5a9e74ab00cc458/xlwings-0.33.22-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:33b3c4edcbc463b134738bbe6a72c66305d7416bbbf4cc68831652edb7c56b29", size = 1565863, upload-time = "2026-03-22T09:43:24.961Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/76/8d/da3a188c149e800cd0bb7b157df3107e6f4b6ca336026afed23ac9623719/xlwings-0.33.22-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:781b56a1f457152dff869f300010385ecaf37958c83a4e5a95e2808d5b4cd6fd", size = 1610188, upload-time = "2026-03-22T09:43:26.653Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/be/6a/095845d24bad24bd85dbd72aa85960a156d8c555c8d5ea659618ed71dec1/xlwings-0.33.22-cp313-cp313-win_amd64.whl", hash = "sha256:37b9d640326944298ee99070e332f90a257fc979bdff518fcd020417fc81945a", size = 1552601, upload-time = "2026-03-22T09:43:28.299Z" },
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/de/11/866a8d014c734dbeb882193bf2da80f749d6d952beed2180a7e1c44d233c/xlwings-0.33.22-py3-none-any.whl", hash = "sha256:3fc8703d9f004db7b1a831f5e755b32a1de70456f1c904beeba64c6530d0cf6e", size = 683897, upload-time = "2026-03-22T09:43:41.567Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a6/34/57942c1eee4cf837625f2e41d469fcbb919a24fd6e219d4276614bcc4dc5/xlwings-0.34.0-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:d6a3ce5582511727f9172b0ea7d3505051ed0076b836439dd890673ffc510142", size = 1354631, upload-time = "2026-03-26T15:06:49.846Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/43/83/c6aa690c8fe46ed28c184d143d15be6acbbfb062a431117662add9d3b5b5/xlwings-0.34.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:655107eb4ddd206f4c79473ba6c7425b15a802ef0a24e926661df3cfb42549f7", size = 1337525, upload-time = "2026-03-26T15:06:51.432Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/c4/25/8e4f1a519ba3b244ac928bdba128c4757360af4a1a529245dc4d6d8fad27/xlwings-0.34.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d7719c0de11fd7d3b92c40796f1bd5b139c7bd414e98fe0f3db4a45b78e55993", size = 1396050, upload-time = "2026-03-26T15:06:52.75Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/7a/e0/2e105cab26be629b0455b50a6dd13358fa7ee757e1ebbfb41fbbb1fd500f/xlwings-0.34.0-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:1865ff8e54bfcd33ad74133e77cff452c5db6bd2fb1485550ad9e0e63cf0fa5d", size = 1402549, upload-time = "2026-03-26T15:06:54.01Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/5f/2b/a4f412fb4430a41086a83f1579efdc4afdab958725da6756abc4183c1f86/xlwings-0.34.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2636c840c4699f4bae0cd7868210f9efde2101935a04c882feab101c99bf2769", size = 1407169, upload-time = "2026-03-26T15:06:55.247Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a2/35/dc7c306d9913fc6efcd7f5cb878b2f5e349b4906615478b0dc4f5eb113bf/xlwings-0.34.0-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:847931b3dc347af892760ae439e9a24cc8bd94497a3bac55a89891c616696e4d", size = 1567983, upload-time = "2026-03-26T15:06:56.707Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/30/ab/071d714b3b99a64cb564ef4b0a9feb2290e8d9f2e283219b456622fa8552/xlwings-0.34.0-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:a893907ff6fc07e83515e1cb664d67ea2da02723d7a0380732218ba00d41ebb3", size = 1612376, upload-time = "2026-03-26T15:06:58.191Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/44/83/992e3dc01c7dd8fd917a9579a88abcefecb11fbf65c6b90cc7658334cdfe/xlwings-0.34.0-cp313-cp313-win_amd64.whl", hash = "sha256:aed541938f015ab09e99a51fe3f3b8f96bc2fcc906171aadbb4b86e4058912ef", size = 1554956, upload-time = "2026-03-26T15:06:59.937Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/64/b3/42b64f3e053548525e9d409a23e2b2d48507033a838c6e5d5ffa636e07c9/xlwings-0.34.0-py3-none-any.whl", hash = "sha256:1053d0628e97d8d1b8d098760ce39e73034d2d333ba844fc637c3581710ccddc", size = 685940, upload-time = "2026-03-26T15:07:12.689Z" },
 ]
