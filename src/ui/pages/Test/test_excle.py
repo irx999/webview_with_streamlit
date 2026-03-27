@@ -1,7 +1,10 @@
+import os
+
 import pandas as pd
 import streamlit as st
 import xlwings as xw
-import os
+
+from src.ui.utils import save_uploaded_file
 
 
 def get_active():
@@ -22,25 +25,6 @@ def get_range():
         st.toast(f"请选择一个工作簿 \n  {e}", icon="❌")
 
 
-def save_uploaded_file(uploaded_file, save_directory):
-    """保存上传的文件到指定目录"""
-    try:
-        # 确保保存目录存在
-        os.makedirs(save_directory, exist_ok=True)
-        
-        # 构建完整的文件路径
-        file_path = os.path.join(save_directory, uploaded_file.name)
-        
-        # 保存文件
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        
-        return file_path
-    except Exception as e:
-        st.error(f"保存文件时出错: {str(e)}")
-        return None
-
-
 if __name__ == "__main__":
     if st.button("获取当前选择区域"):
         st.write(get_active())
@@ -50,14 +34,16 @@ if __name__ == "__main__":
     if file:
         st.help(file)
         st.write(file)
-        
+
         # 添加保存路径输入
         save_path = st.text_input(
-            "指定保存文件夹路径", 
-            value=os.path.join(os.getcwd(), "uploads"),  # 默认保存到当前目录下的uploads文件夹
-            help="请输入要保存文件的完整文件夹路径"
+            "指定保存文件夹路径",
+            value=os.path.join(
+                os.getcwd(), "uploads"
+            ),  # 默认保存到当前目录下的uploads文件夹
+            help="请输入要保存文件的完整文件夹路径",
         )
-        
+
         if st.button("保存文件"):
             if save_path.strip():
                 saved_path = save_uploaded_file(file, save_path.strip())
