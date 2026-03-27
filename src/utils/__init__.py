@@ -13,22 +13,26 @@ def get_resource_path(relative_path: list[str] | str):
     :param relative_path: 相对于项目根目录或 spec 文件中 defined path 的路径
     :return: 绝对路径字符串
     """
-    try:
-        # PyInstaller 打包后，会将文件解压到临时文件夹，路径保存在 _MEIPASS 中
-        base_path = sys._MEIPASS  # type: ignore
-    except AttributeError:
-        # 正常开发环境下，使用当前脚本所在的目录
-        base_path = os.path.abspath(".")
+    if hasattr(sys, "_MEIPASS"):
+        base_path = getattr(sys, "_MEIPASS", os.getcwd())
+
+    else:
+        # base_path = os.path.abspath(".")
         base_path = os.getcwd()
-        # 或者更严谨一点，使用 __file__ (但在某些交互式环境可能失效)
-        # base_path = os.path.dirname(os.path.abspath(__file__))
+
     if isinstance(relative_path, str):
+        # 绝对路径
         if os.path.exists(os.path.join(base_path, relative_path)):
             return os.path.join(base_path, relative_path)
-
+        # 相对路径
+        if os.path.exists(relative_path):
+            return relative_path
+    # 使用绝对路径
     for i in relative_path:
         if os.path.exists(os.path.join(base_path, i)):
             return os.path.join(base_path, i)
+
+    # 使用相对路径
     for i in relative_path:
         if os.path.exists(i):
             return i
