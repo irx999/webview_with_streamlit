@@ -25,6 +25,13 @@ PAGES: dict[str, list[Any]] = {
             icon="🏠",
         ),
     ],
+    "🧪Tiny_tools": [
+        st.Page(
+            HP + "Tiny_tools/dingbot.py",
+            title="Dingbot",
+            icon="🧪",
+        ),
+    ],
     "⚙️Setting": [],
     "🧪功能测试": [
         st.Page(

@@ -106,6 +106,8 @@ def _copy_assets_to_dist(pack_path: str, dist_path: str) -> None:
             if os.path.exists(file_name):
                 shutil.copy2(file_name, os.path.join(pack_path, "assets"))
 
+        shutil.copy2(latest_json_src, "assets")
+
         print("✅ 资源文件复制完成。")
     except Exception as e:
         print(f"❌ 资源文件复制失败：{e}")
