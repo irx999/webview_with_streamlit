@@ -54,6 +54,11 @@ PAGES: dict[str, list[Any]] = {
             title="update_test",
             icon="🧪",
         ),
+        st.Page(
+            HP + "Test/布局测试.py",
+            title="布局测试",
+            icon="🧪",
+        ),
     ],
 }
 try:
