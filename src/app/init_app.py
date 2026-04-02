@@ -2,7 +2,7 @@ from src.utils.config_manager import ConfigManager
 
 from .app_utils import ensure_shortcut_in_start_menu_and_desktop
 
-app_config = ConfigManager("assets/config.json", "app_config")
+app_config = ConfigManager("config.json", "app_config")
 
 
 def init():

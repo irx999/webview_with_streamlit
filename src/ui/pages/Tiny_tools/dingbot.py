@@ -6,7 +6,7 @@ import streamlit as st
 from src.ui.utils import st_markdown
 from src.utils.config_manager import ConfigManager
 
-dingrobot_config = ConfigManager("assets/config.json", "dingrobot_config")
+dingrobot_config = ConfigManager("config.json", "dingrobot_config")
 
 
 class Dingrobot:
