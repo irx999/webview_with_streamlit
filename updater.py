@@ -1,166 +1,527 @@
 import json
 import os
 import shutil
+import subprocess
+import threading
 
 import requests
 import webview
 from loguru import logger
 
-logger.add("logs/updater.log", format="{time} {level} {message}")
+# 配置日志
+logger.remove()
+logger.add("logs/updater.log", format="{time} {level} {message}", rotation="10 MB")
 
 
-# 添加一个简单的前端页面函数
-def create_simple_frontend():
+class UpdateManager:
+    """现代化更新管理器"""
+
+    def __init__(self):
+        self.api_urls = [
+            "https://d.irx999.fun:2333/index.php?action=download&file=%E6%B5%8B%E8%AF%95%2Flatest.json",
+        ]
+        self.temp_dir = "./temp"
+        os.makedirs(self.temp_dir, exist_ok=True)
+        self.download_path = os.path.join(self.temp_dir, "update.zip")
+        self.extract_path = os.path.join(self.temp_dir, "extracted")
+        self.main_exe_name = "My_app.exe"  # 主程序名称
+        self.password = "123"  # 主程序密码
+
+        # 进度状态
+        self.download_progress = 0
+        self.extract_progress = 0
+        self.current_status = "准备就绪"
+
+    def get_release_info(self):
+        """获取最新版本信息"""
+        logger.info("获取最新版本信息...")
+        for url in self.api_urls:
+            try:
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    return response.json()
+            except Exception as e:
+                logger.error(f"获取版本信息失败: {e}")
+                continue
+        return None
+
+    def get_local_version(self):
+        """获取本地版本"""
+        local_file = "./assets/latest.json"
+        if os.path.exists(local_file):
+            try:
+                with open(local_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data.get("version", "0.0.0")
+            except Exception as e:
+                logger.error(f"读取本地版本失败: {e}")
+        return "0.0.0"
+
+    def needs_update(self, release_info):
+        """检查是否需要更新"""
+        if not release_info or "version" not in release_info:
+            return False
+
+        local_version = self.get_local_version()
+        remote_version = release_info["version"]
+
+        logger.info(f"本地版本: {local_version}, 远程版本: {remote_version}")
+        return local_version != remote_version
+
+    def download_update(self, download_url):
+        """下载更新文件并报告进度"""
+        try:
+            self.current_status = "正在下载..."
+            logger.info(f"开始下载: {download_url}")
+
+            response = requests.get(download_url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            total_size = int(response.headers.get("content-length", 0))
+            downloaded = 0
+
+            with open(self.download_path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        file.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0:
+                            self.download_progress = int(
+                                (downloaded / total_size) * 100
+                            )
+
+            self.download_progress = 100
+            logger.info("下载完成")
+            return True
+
+        except Exception as e:
+            logger.error(f"下载失败: {e}")
+            return False
+
+    def extract_update(self):
+        """解压更新文件并报告进度"""
+        try:
+            self.current_status = "正在解压..."
+            logger.info("开始解压...")
+
+            # 清理之前的解压目录
+            if os.path.exists(self.extract_path):
+                shutil.rmtree(self.extract_path)
+
+            # 解压文件
+            shutil.unpack_archive(self.download_path, self.extract_path)
+            self.extract_progress = 100
+            logger.info("解压完成")
+            return True
+
+        except Exception as e:
+            logger.error(f"解压失败: {e}")
+            return False
+
+    def terminate_main_process(self):
+        """终止主程序进程"""
+        try:
+            import psutil
+
+            logger.info("检查并终止主程序进程...")
+
+            for proc in psutil.process_iter(["pid", "name"]):
+                if proc.info["name"] == self.main_exe_name:
+                    logger.info(
+                        f"终止进程: {proc.info['name']} (PID: {proc.info['pid']})"
+                    )
+                    proc.terminate()
+                    proc.wait(timeout=5)
+
+        except ImportError:
+            logger.warning("psutil未安装，跳过进程终止")
+        except Exception as e:
+            logger.error(f"终止进程时出错: {e}")
+
+    def replace_files(self):
+        """替换文件"""
+        try:
+            self.current_status = "正在替换文件..."
+            logger.info("开始替换文件...")
+
+            if not os.path.exists(self.extract_path):
+                logger.error("解压目录不存在")
+                return False
+
+            # 复制所有文件到当前目录
+            for item_name in os.listdir(self.extract_path):
+                source = os.path.join(self.extract_path, item_name)
+                target = os.path.join(os.getcwd(), item_name)
+
+                if os.path.isdir(source):
+                    if os.path.exists(target):
+                        shutil.rmtree(target)
+                    shutil.copytree(source, target)
+                else:
+                    if os.path.exists(target):
+                        os.remove(target)
+                    shutil.copy2(source, target)
+
+            logger.info("文件替换完成")
+            return True
+
+        except Exception as e:
+            logger.error(f"文件替换失败: {e}")
+            return False
+
+    def cleanup(self):
+        """清理临时文件"""
+        try:
+            if os.path.exists(self.temp_dir):
+                shutil.rmtree(self.temp_dir)
+                logger.info("临时文件清理完成")
+        except Exception as e:
+            logger.error(f"清理失败: {e}")
+
+    def start_main_app(self):
+        """启动主程序"""
+        try:
+            main_exe = self.main_exe_name
+            if os.path.exists(main_exe):
+                logger.info("启动主程序...")
+                # 使用 -s 参数和密码启动
+                subprocess.Popen([main_exe, "-s", self.password])
+                return True
+            else:
+                logger.error("主程序不存在")
+                return False
+        except Exception as e:
+            logger.error(f"启动主程序失败: {e}")
+            return False
+
+
+class UpdaterAPI:
+    """Web API接口"""
+
+    def __init__(self):
+        self.update_manager = UpdateManager()
+        self.update_thread = None
+
+    def get_status(self):
+        """获取当前状态"""
+        return {
+            "download_progress": self.update_manager.download_progress,
+            "extract_progress": self.update_manager.extract_progress,
+            "current_status": self.update_manager.current_status,
+        }
+
+    def check_and_update(self):
+        """检查更新并执行更新流程"""
+
+        def update_process():
+            try:
+                # 获取版本信息
+                release_info = self.update_manager.get_release_info()
+                if not release_info:
+                    self.update_manager.current_status = "无法获取版本信息"
+                    return
+
+                # 检查是否需要更新
+                if not self.update_manager.needs_update(release_info):
+                    self.update_manager.current_status = "已是最新版本"
+                    # 直接启动主程序
+                    self.update_manager.start_main_app()
+                    return
+
+                # 获取下载URL
+                if "browser_download_url" in release_info:
+                    download_url = release_info["browser_download_url"]
+                elif "assets" in release_info and len(release_info["assets"]) > 0:
+                    download_url = release_info["assets"][0].get(
+                        "browser_download_url", ""
+                    )
+                else:
+                    self.update_manager.current_status = "下载链接无效"
+                    return
+
+                if not download_url:
+                    self.update_manager.current_status = "下载链接为空"
+                    return
+
+                # 下载更新
+                if not self.update_manager.download_update(download_url):
+                    self.update_manager.current_status = "下载失败"
+                    return
+
+                # 解压更新
+                if not self.update_manager.extract_update():
+                    self.update_manager.current_status = "解压失败"
+                    return
+
+                # 终止主程序
+                self.update_manager.terminate_main_process()
+
+                # 替换文件
+                if not self.update_manager.replace_files():
+                    self.update_manager.current_status = "文件替换失败"
+                    return
+
+                # 清理
+                self.update_manager.cleanup()
+
+                # 完成
+                self.update_manager.current_status = "更新完成！点击启动按钮运行程序"
+
+            except Exception as e:
+                logger.error(f"更新过程出错: {e}")
+                self.update_manager.current_status = f"更新失败: {str(e)}"
+
+        self.update_thread = threading.Thread(target=update_process, daemon=True)
+        self.update_thread.start()
+        return {"success": True}
+
+    def launch_app(self):
+        """启动应用程序"""
+        success = self.update_manager.start_main_app()
+        return {"success": success}
+
+
+def create_modern_ui():
+    """创建现代化 UI 界面"""
     html_content = """
     <!DOCTYPE html>
-    <html>
+    <html lang="zh-CN">
     <head>
-        <title>Updater</title>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>应用程序更新器</title>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            /* 移除所有滚动条 */
             body {
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f5f5f5;
+                font-family: 'Noto Sans SC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #ffffff;
+                width: 582px;
+                height: 282px;
+                overflow: hidden; /* 禁止滚动 */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
             }
+            
             .container {
-                background-color: white;
-                border-radius: 10px;
+                background: #ffffff;
+                width: 582px;
+                height: 282px;
+                overflow: hidden;
+                display: flex;
+            }
+            
+            .logo-section {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 padding: 20px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
-            h1 {
-                color: #333;
-                text-align: center;
+            
+            .logo-section img {
+                width: 120px;
+                height: 120px;
+                border-radius: 16px;
+                object-fit: cover;
             }
-            button {
-                background-color: #4CAF50;
-                color: white;
-                padding: 12px 24px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 16px;
-                width: 100%;
-                margin: 10px 0;
+            
+            .progress-section {
+                flex: 2;
+                padding: 24px 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
             }
-            button:hover {
-                background-color: #45a049;
+            
+            .header {
+                color: #2d3748;
+                text-align: left;
             }
-            button:disabled {
-                background-color: #cccccc;
-                cursor: not-allowed;
+            
+            .header h1 {
+                font-size: 20px;
+                font-weight: 600;
+                margin-bottom: 6px;
+                letter-spacing: -0.2px;
             }
-            #log {
-                background-color: #f8f8f8;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                height: 300px;
-                overflow-y: scroll;
-                padding: 10px;
-                font-family: monospace;
-                white-space: pre-wrap;
+            
+            .header p {
+                color: #718096;
+                font-size: 13px;
+                line-height: 1.4;
+                font-weight: 400;
             }
+            
             .status {
-                text-align: center;
-                font-weight: bold;
-                margin: 10px 0;
+                text-align: left;
+                font-size: 12px;
+                font-weight: 500;
+                color: #4a5568;
+                min-height: 16px;
+                margin-top: 4px;
+            }
+            
+            .loading-icon {
+                width: 24px;
+                height: 24px;
+                border: 2px solid #e2e8f0;
+                border-top: 2px solid #4facfe;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 8px 0;
+                display: none;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Noto Sans SC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            .btn-primary {
+                background: #4facfe;
+                color: white;
+                box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
+            }
+            
+            .btn-primary:hover:not(:disabled) {
+                background: #3a9bef;
+                transform: translateY(-1px);
+                box-shadow: 0 3px 8px rgba(79, 172, 254, 0.4);
+            }
+            
+            .btn-primary:disabled {
+                background: #e2e8f0;
+                color: #a0aec0;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .btn-secondary {
+                background: #f7fafc;
+                color: #4a5568;
+                border: 1px solid #e2e8f0;
+            }
+            
+            .btn-secondary:hover {
+                background: #edf2f7;
+                border-color: #cbd5e0;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>应用程序更新器</h1>
-            <div class="status" id="status">准备就绪</div>
-            <button id="checkBtn" onclick="checkUpdate()">检查更新</button>
-            <button id="updateBtn" onclick="startUpdate()" disabled>开始更新</button>
-            <div id="log"></div>
+            <div class="logo-section">
+                <!-- 默认应用图标 -->
+                <img src="https://placehold.co/120x120/4facfe/white?text=BT" alt="Better-tools Logo">
+            </div>
+            <div class="progress-section">
+                <div class="header">
+                    <h1>Better-tools</h1>
+                    <p>更好的原神，免费且开源</p>
+                </div>
+                <div class="status" id="status">准备就绪</div>
+                <div class="loading-icon" id="loading-icon"></div>
+                <div class="buttons">
+                    <button class="btn btn-primary" id="updateBtn" onclick="startUpdate()">获取最新版本</button>
+                    <button class="btn btn-secondary" id="launchBtn" onclick="launchApp()" style="display: none;">校验更新内容</button>
+                </div>
+            </div>
         </div>
 
         <script>
-            let updateAvailable = false;
-            let downloadUrl = '';
-            let fileName = '';
+            let updateCompleted = false;
+            let isProcessing = false;
 
-            function logMessage(message) {
-                const logElement = document.getElementById('log');
-                const timestamp = new Date().toLocaleTimeString();
-                logElement.innerHTML += `[${timestamp}] ${message}\\n`;
-                logElement.scrollTop = logElement.scrollHeight;
+            function showLoading() {
+                document.getElementById('loading-icon').style.display = 'block';
             }
 
-            function updateStatus(status) {
-                document.getElementById('status').innerText = status;
+            function hideLoading() {
+                document.getElementById('loading-icon').style.display = 'none';
             }
 
-            async function checkUpdate() {
-                const checkBtn = document.getElementById('checkBtn');
-                const updateBtn = document.getElementById('updateBtn');
-                
-                checkBtn.disabled = true;
-                updateStatus('正在检查更新...');
-                logMessage('开始检查更新...');
-                
-                try {
-                    const response = await fetch('/check_update', {method: 'POST'});
-                    const result = await response.json();
-                    
-                    if (result.available) {
-                        updateAvailable = true;
-                        downloadUrl = result.download_url;
-                        fileName = result.file_name;
-                        
-                        updateBtn.disabled = false;
-                        updateStatus(`发现新版本: ${result.version}`);
-                        logMessage(`发现新版本: ${result.version}`);
-                        logMessage(`下载地址: ${downloadUrl}`);
+            function updateUI() {
+                pywebview.api.get_status().then(status => {
+                    document.getElementById('status').textContent = status.current_status;
+
+                    // 检查是否在处理中
+                    isProcessing = status.current_status !== '准备就绪' && 
+                                 !status.current_status.includes('更新完成') && 
+                                 status.current_status !== '已是最新版本';
+
+                    if (isProcessing) {
+                        showLoading();
                     } else {
-                        updateStatus('当前已是最新版本');
-                        logMessage('当前已是最新版本');
+                        hideLoading();
                     }
-                } catch (error) {
-                    updateStatus('检查更新失败');
-                    logMessage(`检查更新失败: ${error}`);
-                } finally {
-                    checkBtn.disabled = false;
-                }
+
+                    // 如果更新完成，显示启动按钮
+                    if (status.current_status.includes('更新完成') || status.current_status === '已是最新版本') {
+                        updateCompleted = true;
+                        document.getElementById('updateBtn').style.display = 'none';
+                        document.getElementById('launchBtn').style.display = 'inline-flex';
+                        hideLoading();
+                    }
+
+                    // 更新按钮状态
+                    document.getElementById('updateBtn').disabled = isProcessing;
+                });
             }
 
-            async function startUpdate() {
-                const checkBtn = document.getElementById('checkBtn');
-                const updateBtn = document.getElementById('updateBtn');
-                
-                checkBtn.disabled = true;
-                updateBtn.disabled = true;
-                
-                updateStatus('正在更新...');
-                logMessage('开始更新...');
-                
-                try {
-                    const response = await fetch('/start_update', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            download_url: downloadUrl,
-                            file_name: fileName
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        updateStatus('更新完成');
-                        logMessage('更新完成，请重启应用程序');
-                    } else {
-                        throw new Error('更新失败');
-                    }
-                } catch (error) {
-                    updateStatus('更新失败');
-                    logMessage(`更新失败: ${error}`);
-                }
+            function startUpdate() {
+                document.getElementById('updateBtn').disabled = true;
+                showLoading();
+                pywebview.api.check_and_update().then(() => {
+                    // 开始轮询更新状态
+                    const interval = setInterval(() => {
+                        updateUI();
+                        if (updateCompleted || !isProcessing) {
+                            clearInterval(interval);
+                        }
+                    }, 500);
+                });
             }
+
+            function launchApp() {
+                pywebview.api.launch_app().then(result => {
+                    if (result.success) {
+                        setTimeout(() => {
+                            window.close();
+                        }, 1000);
+                    }
+                });
+            }
+
+            // 初始化
+            document.addEventListener('DOMContentLoaded', () => {
+                updateUI();
+                setInterval(updateUI, 1000);
+            });
         </script>
     </body>
     </html>
@@ -168,302 +529,24 @@ def create_simple_frontend():
     return html_content
 
 
-logger.add("logs/updater.log", format="{time} {level} {message}")
-
-
-class Updater:
-    """应用程序更新器，负责检查、下载、解压和安装最新版本的应用程序。"""
-
-    def __init__(self):
-        # 进程名称列表
-        self.process_names = [
-            "March7th Assistant.exe",
-            "March7th Launcher.exe",
-            "flet.exe",
-            "gui.exe",
-        ]
-        # API地址列表
-        self.api_urls = [
-            "https://d.irx999.fun:2333/index.php?action=download&file=%E6%B5%8B%E8%AF%95%2Flatest.json",
-        ]
-        # 临时目录路径
-        self.temp_path = os.path.abspath("./temp")
-        os.makedirs(self.temp_path, exist_ok=True)
-
-        # 初始化文件名
-        self.file_name = ""
-
-        # 初始化文件路径（将在_get_paths中更新）
-        self.download_file_path = os.path.join(self.temp_path, "cache.zip")
-        self.extract_folder_path = os.path.join(self.temp_path, "extract")
-        self.cover_folder_path = os.getcwd()
-
-        # 需要删除的文件路径列表
-        self.delete_file_path_list = [
-            "assets",
-            "app-0.0.1",
-            "My_app.exe",
-        ]
-
-        # 发布信息
-        self.release_info = {}
-
-    def get_release_info(self):
-        logger.info("🌟 获取最新版本信息...")
-        for url in self.api_urls:
-            lastst_info = requests.get(url)
-            if lastst_info.status_code == 200:
-                self.release_info = lastst_info.json()
-                return
-        logger.error(f"❌ 获取最新版本信息失败: {lastst_info.status_code}")
-
-    def get_local_version(self):
-        logger.info("🌟 获取本地版本信息...")
-        if os.path.exists("./assets/latest.json"):
-            with open("./assets/latest.json", "r", encoding="utf-8") as file:
-                data = json.load(file)
-                return data.get("version", "0.0.0")
-        logger.error("❌ 本地信息不存在 将返回0.0.0")
-        return "0.0.0"
-
-    def compare_versions(self):
-        """处理发布数据，获取下载URL并比较版本。"""
-        # 确保有版本信息
-        if "version" not in self.release_info:
-            logger.warning("❌ 最新版本信息中没有版本号")
-            return False
-
-        release_version = self.release_info["version"]
-        local_version = self.get_local_version()
-
-        logger.info(f"最新版本: {release_version}")
-        logger.info(f"本地版本: {local_version}")
-        if release_version != local_version:
-            return True
-        return False
-
-    def download_file(self):
-        try:
-            logger.info("🌟 开始下载...")
-            os.makedirs(self.temp_path, exist_ok=True)
-
-            url = self.release_info["download_url"]
-
-            with requests.get(url) as response:
-                response.raise_for_status()
-                with open(self.download_file_path, "wb") as file:
-                    file.write(response.content)
-            logger.info(f"下载完成: {self.download_file_path}")
-        except Exception as e:
-            logger.error(f"下载失败: {e}")
-            if os.path.exists(self.download_file_path):
-                os.remove(self.download_file_path)
-
-    def extract_file(self):
-        """解压下载的文件。"""
-        try:
-            logger.info("🌟 开始解压...")
-            shutil.unpack_archive(self.download_file_path, self.extract_folder_path)
-            logger.info(f"解压完成: {self.extract_folder_path}")
-            return True
-        except Exception as e:
-            logger.error(f"解压失败: {e}")
-            return False
-
-    def terminate_processes(self):
-        # 确保psutil模块已导入
-        try:
-            import psutil  # type: ignore #
-
-            logger.info("开始终止进程...")
-            for proc in psutil.process_iter(attrs=["pid", "name"]):
-                if proc.info["name"] in self.process_names:
-                    try:
-                        proc.terminate()
-                        proc.wait(10)
-                    except (
-                        psutil.NoSuchProcess,
-                        psutil.TimeoutExpired,
-                        psutil.AccessDenied,
-                    ):
-                        pass
-            logger.info("终止进程完成")
-        except ImportError:
-            logger.warning("psutil模块未安装，跳过进程终止步骤")
-
-    def cover_folder(self):
-        """覆盖安装最新版本的文件。"""
-        try:
-            logger.info("开始覆盖...")
-            if not os.path.exists(self.extract_folder_path):
-                logger.error(f"解压目录不存在: {self.extract_folder_path}")
-                return False
-
-            # 遍历解压目录中的所有文件和文件夹，并复制到工作目录
-            for item_name in os.listdir(self.extract_folder_path):
-                source_item = os.path.join(self.extract_folder_path, item_name)
-                target_item = os.path.join(self.cover_folder_path, item_name)
-
-                if os.path.isdir(source_item):
-                    shutil.copytree(source_item, target_item, dirs_exist_ok=True)
-                else:
-                    shutil.copy2(source_item, target_item)
-
-            logger.info(f"覆盖完成: {self.cover_folder_path}")
-            return True
-        except Exception as e:
-            logger.error(f"覆盖失败: {e}")
-            return False
-
-    def cleanup(self):
-        """清理下载和解压的临时文件。"""
-        logger.info("开始清理...")
-        try:
-            if os.path.exists(self.temp_path):  # 删除临时目录
-                shutil.rmtree(self.temp_path)
-                logger.info(f"清理完成: {self.temp_path}")
-            if os.path.exists(self.download_file_path):
-                os.remove(self.download_file_path)
-                logger.info(f"清理完成: {self.download_file_path}")
-            if os.path.exists(self.extract_folder_path):
-                shutil.rmtree(self.extract_folder_path)
-                logger.info(f"清理完成: {self.extract_folder_path}")
-        except Exception as e:
-            logger.error(f"清理失败: {e}")
-
-    def run(self):
-        """运行更新流程。"""
-        try:
-            # 获取最新版本信息
-            self.get_release_info()
-            # 比较版本
-            if self.compare_versions():
-                # 下载文件
-                self.download_file()
-                # 解压文件
-                if self.extract_file():
-                    # 终止进程
-                    self.terminate_processes()
-                    # 覆盖安装
-                    if self.cover_folder():
-                        # 清理临时文件
-                        self.cleanup()
-                        return True
-            else:
-                logger.info("当前已是最新版本，无需更新")
-            return False
-        except Exception as e:
-            logger.error(f"更新过程中出现错误: {e}")
-            return False
-
-
-# 创建API类用于前端交互
-class UpdaterApi:
-    """API类用于处理前端交互。"""
-
-    def __init__(self):
-        self.updater = None
-        self.latest_version_info = None
-
-    def check_update(self):
-        try:
-            updater = Updater()
-            updater.get_release_info()
-
-            if (
-                "assets" in updater.release_info
-                and len(updater.release_info["assets"]) > 0
-            ):
-                download_url = updater.release_info["assets"][0].get(
-                    "browser_download_url", ""
-                )
-                file_name = download_url.split("/")[-1] if download_url else ""
-            elif "browser_download_url" in updater.release_info:
-                download_url = updater.release_info["browser_download_url"]
-                file_name = download_url.split("/")[-1] if download_url else ""
-            else:
-                download_url = ""
-                file_name = ""
-
-            version = updater.release_info.get("version", "Unknown")
-
-            if download_url and updater.compare_versions():
-                self.latest_version_info = {
-                    "download_url": download_url,
-                    "file_name": file_name,
-                    "version": version,
-                }
-                return {
-                    "available": True,
-                    "download_url": download_url,
-                    "file_name": file_name,
-                    "version": version,
-                }
-            else:
-                return {"available": False, "message": "当前已是最新版本"}
-        except Exception as e:
-            logger.error(f"检查更新时出错: {e}")
-            return {"available": False, "error": str(e)}
-
-    def start_update(self, params=None):
-        try:
-            if params is None:
-                params = {}
-
-            download_url = params.get("download_url", "")
-            file_name = params.get("file_name", "")
-
-            # 如果没有提供参数，则使用已检查的版本信息
-            if (
-                not download_url
-                and hasattr(self, "latest_version_info")
-                and self.latest_version_info
-            ):
-                download_url = self.latest_version_info.get("download_url", "")
-                file_name = self.latest_version_info.get("file_name", "")
-
-            self.updater = Updater()
-            # 手动设置下载信息
-            if download_url:
-                self.updater.release_info = {
-                    "browser_download_url": download_url,
-                    "version": "latest",
-                }
-                self.updater.file_name = file_name
-
-            success = self.updater.run()
-
-            if success:
-                return {"success": True}
-            else:
-                return {"success": False, "error": "更新过程失败或无需更新"}
-        except Exception as e:
-            logger.error(f"开始更新时出错: {e}")
-            return {"success": False, "error": str(e)}
-
-
 def main():
-    api = UpdaterApi()
+    """主函数"""
+    api = UpdaterAPI()
 
-    # 创建webview窗口
-    webview.create_window(
+    # 创建窗口
+    window = webview.create_window(
         "应用程序更新器",
-        html=create_simple_frontend(),
-        width=800,
-        height=600,
-        resizable=True,
+        html=create_modern_ui(),
+        width=582,
+        height=282,
+        resizable=False,
         js_api=api,
+        frameless=False,
     )
 
-    # 启动webview
+    # 启动应用
     webview.start(debug=False)
 
 
-def _main():
-    pass
-
-
 if __name__ == "__main__":
-    updater = Updater()
-
-    updater.run()
+    main()
