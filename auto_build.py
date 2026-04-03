@@ -341,10 +341,10 @@ class AutoBuildUpdateApp:
     def main() -> None:
         """更新程序构建入口。"""
         options = argparse.Namespace(
-            script="Updater.py",
-            icon="assets/ico/main.ico",
-            name="Updater",
-            product_name="Updater",
+            script="Better-Tools-Launcher.py",
+            icon="assets/ico/Better-Tools-Launcher.ico",
+            name="Better-Tools-Launcher",
+            product_name="Better-Tools-Launcher",
             version="0.0.1",
             non_interactive=True,
             onedir=False,

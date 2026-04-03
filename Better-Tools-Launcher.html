@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>应用程序更新器</title>
+    <!-- 使用国内镜像加速字体加载 -->
+    <link
+      href="https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* 移除所有滚动条 */
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: rgba(240, 240, 240, 0.1); /* 提高透明度 - 从0.3降低到0.1 */
+        backdrop-filter: blur(15px); /* 增加模糊度 */
+        -webkit-backdrop-filter: blur(15px); /* Safari兼容性 */
+        width: 600px;
+        height: 250px;
+        overflow: hidden; /* 禁止滚动 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.3); /* 提高透明度 - 从0.6降低到0.3 */
+        backdrop-filter: blur(15px); /* 增加模糊度 */
+        -webkit-backdrop-filter: blur(15px); /* Safari兼容性 */
+        width: 600px;
+        height: 250px;
+        overflow: hidden;
+        display: flex;
+        position: relative;
+        border-radius: 12px; /* 添加圆角使外观更现代 */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* 添加阴影增强层次感 */
+      }
+
+      .logo-section {
+        flex: 0 0 40%; /* 40% 宽度 */
+        height: 100%;
+        display: flex;
+        align-items: center; /* 垂直居中 - 这会让logo在282px高度的中间，即141px位置 */
+        justify-content: center; /* 水平居中在40%区域内 */
+        position: relative;
+      }
+
+      .logo-section img {
+        max-width: 120px;
+        max-height: 120px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        /* 确保图片本身不会影响居中 */
+        display: block;
+      }
+
+      .progress-section {
+        flex: 0 0 60%; /* 60% 宽度 */
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+      }
+
+      .header {
+        color: #2d3748;
+        text-align: left;
+      }
+
+      .header h1 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        letter-spacing: -0.2px;
+      }
+
+      .header p {
+        color: #718096;
+        font-size: 13px;
+        line-height: 1.4;
+        font-weight: 400;
+      }
+
+      /* 多层状态显示区域 */
+      .status-container {
+        text-align: left;
+        font-size: 12px;
+        font-weight: 500;
+        color: #4a5568;
+        min-height: 60px;
+        margin-top: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .status-main {
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .status-detail {
+        font-weight: 400;
+        color: #718096;
+        font-size: 11px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(226, 232, 240, 0.2);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4facfe, #00f2fe); /* 渐变色进度条 */
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      .loading-icon {
+        width: 24px;
+        height: 24px;
+        border: 2px solid rgba(226, 232, 240, 0.2);
+        border-top: 2px solid #4facfe;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 8px 0;
+        display: none;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family:
+          "Noto Sans SC", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .btn-primary {
+        background: rgba(79, 172, 254, 0.7); /* 提高透明度 - 从0.85降低到0.7 */
+        color: white;
+        box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: rgba(58, 155, 239, 0.8); /* 提高透明度 - 从0.9降低到0.8 */
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(79, 172, 254, 0.4);
+      }
+
+      .btn-primary:disabled {
+        background: rgba(226, 232, 240, 0.4); /* 提高透明度 */
+        color: rgba(160, 174, 192, 0.8);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .btn-secondary {
+        background: rgba(247, 250, 252, 0.4); /* 提高透明度 */
+        color: #4a5568;
+        border: 1px solid rgba(226, 232, 240, 0.4);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(237, 242, 247, 0.5); /* 提高透明度 */
+        border-color: rgba(203, 213, 224, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo-section">
+        <img
+          src="https://irx999.fun/img/assets/Better-Tools/image/updater.png"
+          alt="Better-tools Logo"
+        />
+      </div>
+      <div class="progress-section">
+        <div class="header">
+          <h1>Better-Tools</h1>
+          <p>WebView with Streamlit Desktop Application</p>
+        </div>
+        <div class="status-container">
+          <div class="status-main" id="status-main">准备就绪</div>
+          <div class="status-detail" id="status-detail"></div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+        <div class="loading-icon" id="loading-icon"></div>
+        <div class="buttons">
+          <button
+            class="btn btn-primary"
+            id="updateBtn"
+            onclick="startUpdate()"
+          >
+            检测更新
+          </button>
+          <button class="btn btn-primary" id="launchBtn" onclick="launchApp()">
+            启动主程序
+          </button>
+          <button class="btn btn-primary" id="test" onclick="test()">
+            测试
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let updateCompleted = false;
+      let isProcessing = false;
+
+      function showLoading() {
+        document.getElementById("loading-icon").style.display = "block";
+      }
+
+      function hideLoading() {
+        document.getElementById("loading-icon").style.display = "none";
+      }
+
+      function updateUI() {
+        pywebview.api.get_status().then((status) => {
+          // 更新主状态
+          document.getElementById("status-main").textContent =
+            status.current_status;
+
+          // 更新详细状态和进度
+          let detailText = "";
+          let progressPercent = 0;
+
+          if (status.current_status.includes("正在下载")) {
+            detailText = `下载进度: ${status.download_progress}%`;
+            progressPercent = status.download_progress;
+          } else if (status.current_status.includes("正在解压")) {
+            detailText = `解压进度: ${status.extract_progress}%`;
+            progressPercent = status.extract_progress;
+          } else if (status.current_status.includes("正在替换文件")) {
+            detailText = "文件替换中...";
+            progressPercent = 50;
+          } else if (
+            status.current_status.includes("准备就绪") ||
+            status.current_status.includes("已是最新版本") ||
+            status.current_status.includes("启动成功")
+          ) {
+            detailText = "";
+            progressPercent = 0;
+          } else {
+            detailText = status.current_status;
+            progressPercent = 0;
+          }
+
+          document.getElementById("status-detail").textContent = detailText;
+          document.getElementById("progress-fill").style.width =
+            progressPercent + "%";
+
+          // 检查是否在处理中
+          isProcessing =
+            status.current_status !== "准备就绪" &&
+            !status.current_status.includes("更新完成") &&
+            status.current_status !== "已是最新版本" &&
+            !status.current_status.includes("启动成功");
+
+          if (isProcessing) {
+            showLoading();
+          } else {
+            hideLoading();
+          }
+
+          // 如果更新完成，显示启动按钮
+          if (
+            status.current_status.includes("更新完成") ||
+            status.current_status === "已是最新版本"
+          ) {
+            updateCompleted = true;
+            document.getElementById("updateBtn").style.display = "none";
+            document.getElementById("launchBtn").style.display = "inline-flex";
+            hideLoading();
+          }
+
+          // 更新按钮状态
+          document.getElementById("updateBtn").disabled = isProcessing;
+        });
+      }
+
+      function startUpdate() {
+        document.getElementById("updateBtn").disabled = true;
+        showLoading();
+        pywebview.api.check_and_update().then(() => {
+          // 开始轮询更新状态
+          const interval = setInterval(() => {
+            updateUI();
+            if (updateCompleted || !isProcessing) {
+              clearInterval(interval);
+            }
+          }, 500);
+        });
+      }
+
+      function launchApp() {
+        // 先显示"正在启动..."状态
+        document.getElementById("status-main").textContent =
+          "正在启动主程序...";
+        document.getElementById("status-detail").textContent = "请稍候";
+        showLoading();
+
+        pywebview.api
+          .launch_app()
+          .then((result) => {
+            if (result.success) {
+              // 启动成功
+              document.getElementById("status-main").textContent = "启动成功";
+              document.getElementById("status-detail").textContent =
+                "主程序已启动，2秒后自动退出";
+
+              // 2秒后关闭窗口
+              setTimeout(() => {
+                pywebview.api.windows_destroy();
+              }, 2000);
+            } else {
+              // 启动失败
+              document.getElementById("status-main").textContent = "启动失败";
+              document.getElementById("status-detail").textContent =
+                result.message || "主程序启动失败，请检查日志";
+              hideLoading();
+            }
+          })
+          .catch((error) => {
+            // 处理异常情况
+            document.getElementById("status-main").textContent = "启动失败";
+            document.getElementById("status-detail").textContent =
+              "发生未知错误，请检查日志";
+            hideLoading();
+          });
+      }
+      function test() {
+        // 2. 调用 Python 的 test 函数
+        // 注意：这里假设你已经在 Python 端暴露了 api
+        pywebview.api.windows_destroy().then((result) => {
+          // 3. 判断返回结果是否成功
+          if (result.success) {
+            const btn = document.getElementById("updateBtn");
+
+            // --- 第一步：隐藏按钮 ---
+            btn.style.display = "none";
+            console.log("按钮已隐藏");
+
+            // --- 第二步：设置定时器，1秒后显示 ---
+            setTimeout(() => {
+              btn.style.display = "inline-block"; // 或者 'block'，取决于你的布局
+              console.log("按钮已显示");
+            }, 1000); // 1000毫秒 = 1秒
+          }
+        });
+      }
+
+      // 初始化
+      document.addEventListener("DOMContentLoaded", () => {
+        updateUI();
+        setInterval(updateUI, 1000);
+      });
+    </script>
+  </body>
+</html>

@@ -10,275 +10,8 @@ from loguru import logger
 from webview import Window
 
 # 配置日志
-logger.remove()
-logger.add("logs/updater.log", format="{time} {level} {message}", rotation="10 MB")
 
-
-def create_modern_ui():
-    """创建现代化UI界面"""
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>应用程序更新器</title>
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            /* 移除所有滚动条 */
-            body {
-                font-family: 'Noto Sans SC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #ffffff;
-                width: 600px;
-                height: 250px;
-                overflow: hidden; /* 禁止滚动 */
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0;
-                margin: 0;
-            }
-            
-            .container {
-                background: #ffffff;
-                width: 600px;
-                height: 250px;
-                overflow: hidden;
-                display: flex;
-                position: relative;
-            }
-            
-            .logo-section {
-                flex: 0 0 40%; /* 40% 宽度 */
-                height: 100%;
-                display: flex;
-                align-items: center; /* 垂直居中 - 这会让logo在282px高度的中间，即141px位置 */
-                justify-content: center; /* 水平居中在40%区域内 */
-                position: relative;
-            }
-            
-            .logo-section img {
-                max-width: 120px;
-                max-height: 120px;
-                width: auto;
-                height: auto;
-                object-fit: contain;
-                /* 确保图片本身不会影响居中 */
-                display: block;
-            }
-            
-            .progress-section {
-                flex: 0 0 60%; /* 60% 宽度 */
-                padding: 24px 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                height: 100%;
-                box-sizing: border-box;
-                justify-content: center;
-            }
-            
-            .header {
-                color: #2d3748;
-                text-align: left;
-            }
-            
-            .header h1 {
-                font-size: 20px;
-                font-weight: 600;
-                margin-bottom: 6px;
-                letter-spacing: -0.2px;
-            }
-            
-            .header p {
-                color: #718096;
-                font-size: 13px;
-                line-height: 1.4;
-                font-weight: 400;
-            }
-            
-            .status {
-                text-align: left;
-                font-size: 12px;
-                font-weight: 500;
-                color: #4a5568;
-                min-height: 16px;
-                margin-top: 4px;
-            }
-            
-            .loading-icon {
-                width: 24px;
-                height: 24px;
-                border: 2px solid #e2e8f0;
-                border-top: 2px solid #4facfe;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 8px 0;
-                display: none;
-            }
-            
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            
-            .btn {
-                padding: 8px 16px;
-                border: none;
-                border-radius: 8px;
-                font-size: 12px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-family: 'Noto Sans SC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            }
-            
-            .btn-primary {
-                background: #4facfe;
-                color: white;
-                box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
-            }
-            
-            .btn-primary:hover:not(:disabled) {
-                background: #3a9bef;
-                transform: translateY(-1px);
-                box-shadow: 0 3px 8px rgba(79, 172, 254, 0.4);
-            }
-            
-            .btn-primary:disabled {
-                background: #e2e8f0;
-                color: #a0aec0;
-                cursor: not-allowed;
-                transform: none;
-                box-shadow: none;
-            }
-            
-            .btn-secondary {
-                background: #f7fafc;
-                color: #4a5568;
-                border: 1px solid #e2e8f0;
-            }
-            
-            .btn-secondary:hover {
-                background: #edf2f7;
-                border-color: #cbd5e0;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="logo-section">
-                <img src="https://irx999.fun/img/assets/Better-Tools/image/updater.png" alt="Better-tools Logo">
-            </div>
-            <div class="progress-section">
-                <div class="header">
-                    <h1>Better-Tools</h1>
-                    <p>WebView with Streamlit Desktop Application</p>
-                </div>
-                <div class="status" id="status">准备就绪</div>
-                <div class="loading-icon" id="loading-icon"></div>
-                <div class="buttons">
-                    <button class="btn btn-primary" id="updateBtn" onclick="startUpdate()">检测更新</button>
-                    <button class="btn btn-primary" id="launchBtn" onclick="launchApp()" >启动主程序</button>
-                    <button class="btn btn-primary" id="test" onclick="test()" >关闭</button>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            let updateCompleted = false;
-            let isProcessing = false;
-
-            function showLoading() {
-                document.getElementById('loading-icon').style.display = 'block';
-            }
-
-            function hideLoading() {
-                document.getElementById('loading-icon').style.display = 'none';
-            }
-
-            function updateUI() {
-                pywebview.api.get_status().then(status => {
-                    document.getElementById('status').textContent = status.current_status;
-
-                    // 检查是否在处理中
-                    isProcessing = status.current_status !== '准备就绪' && 
-                                 !status.current_status.includes('更新完成') && 
-                                 status.current_status !== '已是最新版本';
-
-                    if (isProcessing) {
-                        showLoading();
-                    } else {
-                        hideLoading();
-                    }
-
-                    // 如果更新完成，显示启动按钮
-                    if (status.current_status.includes('更新完成') || status.current_status === '已是最新版本') {
-                        updateCompleted = true;
-                        document.getElementById('updateBtn').style.display = 'none';
-                        document.getElementById('launchBtn').style.display = 'inline-flex';
-                        hideLoading();
-                    }
-
-                    // 更新按钮状态
-                    document.getElementById('updateBtn').disabled = isProcessing;
-                });
-            }
-
-            function startUpdate() {
-                document.getElementById('updateBtn').disabled = true;
-                showLoading();
-                pywebview.api.check_and_update().then(() => {
-                    // 开始轮询更新状态
-                    const interval = setInterval(() => {
-                        updateUI();
-                        if (updateCompleted || !isProcessing) {
-                            clearInterval(interval);
-                        }
-                    }, 500);
-                });
-            }
-
-            function launchApp() {
-                // 先更新状态为"启动成功"
-                document.getElementById('status').textContent = '启动成功';
-                
-                pywebview.api.launch_app().then(result => {
-                    if (result.success) {
-                        // 2秒后关闭窗口
-                        setTimeout(() => {
-                            pywebview.api.test();
-                        }, 2000);
-                    }
-                });
-            }
-            function test() {
-                // 调用 Python 函数，并明确忽略返回的 Promise
-                pywebview.api.test();
-                
-                // 注意：这里的代码会立即执行，不会等待 Python 函数完成
-                console.log("已发起调用，但 Python 函数可能还在运行");
-            }
-            // 初始化
-            document.addEventListener('DOMContentLoaded', () => {
-                updateUI();
-                setInterval(updateUI, 1000);
-            });
-        </script>
-    </body>
-    </html>
-    """
-    return html_content
+logger.add("logs/updater.log")
 
 
 class UpdateManager:
@@ -286,7 +19,7 @@ class UpdateManager:
 
     def __init__(self):
         self.api_urls = [
-            "https://d.irx999.fun:2333/index.php?action=download&file=%E6%B5%8B%E8%AF%95%2Flatest.json",
+            "https://irx999.fun/img/assets/Better-Tools/latest.json",
         ]
         self.temp_dir = "./temp"
         os.makedirs(self.temp_dir, exist_ok=True)
@@ -454,13 +187,15 @@ class UpdateManager:
                 logger.info("启动主程序...")
                 # 使用 -s 参数和密码启动
                 subprocess.Popen([main_exe, "-s", self.password])
-                return True
+                return True, "主程序启动成功"
             else:
-                logger.error("主程序不存在")
-                return False
+                error_msg = "主程序不存在/或者当前是开发者模式"
+                logger.error(error_msg)
+                return False, error_msg
         except Exception as e:
-            logger.error(f"启动主程序失败: {e}")
-            return False
+            error_msg = f"启动主程序失败: {e}"
+            logger.error(error_msg)
+            return False, error_msg
 
 
 class UpdaterAPI:
@@ -545,16 +280,19 @@ class UpdaterAPI:
 
     def launch_app(self):
         """启动应用程序"""
-        success = self.update_manager.start_main_app()
+        success, message = self.update_manager.start_main_app()
         if success:
             logger.info("主程序启动成功")
+            self.update_manager.current_status = "启动成功"
+            return {"success": True, "message": message}
         else:
             logger.error("主程序启动失败")
-        return {"success": True}
+            self.update_manager.current_status = "启动失败"
+            return {"success": False, "message": message}
 
-    def test(self):
+    def windows_destroy(self):
         """测试"""
-        print("测试")
+        logger.info("windows_destroy")
         window: Window = webview.windows[0]
         window.destroy()
 
@@ -565,17 +303,23 @@ def main():
 
     # 创建窗口
     window = webview.create_window(
-        "Better-Tools 更新程序",
-        html=create_modern_ui(),
+        "Better-Tools-Launcher",
+        url="Better-Tools-Launcher.html",
         width=600,
         height=300,
         resizable=False,
         js_api=api,
         frameless=False,
+        transparent=True,
+        easy_drag=True,
+        # x=50,
+        # y=50,
     )
-    setattr(window, "name", "Updater")
+    setattr(window, "name", "Better-Tools-Launcher")
     # 启动应用
-    webview.start(debug=True)
+    webview.start(
+        debug=True,
+    )
 
 
 if __name__ == "__main__":
