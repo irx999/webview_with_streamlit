@@ -7,6 +7,7 @@ import threading
 import requests
 import webview
 from loguru import logger
+from webview import Window
 
 # 配置日志
 logger.remove()
@@ -189,7 +190,7 @@ def create_modern_ui():
                 <div class="buttons">
                     <button class="btn btn-primary" id="updateBtn" onclick="startUpdate()">检测更新</button>
                     <button class="btn btn-primary" id="launchBtn" onclick="launchApp()" >启动主程序</button>
-                    <button class="btn btn-primary" id="test" onclick="test()" >测试</button>
+                    <button class="btn btn-primary" id="test" onclick="test()" >关闭</button>
                 </div>
             </div>
         </div>
@@ -249,36 +250,25 @@ def create_modern_ui():
             }
 
             function launchApp() {
+                // 先更新状态为"启动成功"
+                document.getElementById('status').textContent = '启动成功';
+                
                 pywebview.api.launch_app().then(result => {
                     if (result.success) {
+                        // 2秒后关闭窗口
                         setTimeout(() => {
-                            window.close();
-                        }, 1000);
+                            pywebview.api.test();
+                        }, 2000);
                     }
                 });
             }
             function test() {
-            // 2. 调用 Python 的 test 函数
-            // 注意：这里假设你已经在 Python 端暴露了 api
-            pywebview.api.test().then(result => {
+                // 调用 Python 函数，并明确忽略返回的 Promise
+                pywebview.api.test();
                 
-                // 3. 判断返回结果是否成功
-                if (result.success) {
-                    const btn = document.getElementById('updateBtn');
-                    
-                    // --- 第一步：隐藏按钮 ---
-                    btn.style.display = 'none'; 
-                    console.log("按钮已隐藏");
-
-                    // --- 第二步：设置定时器，1秒后显示 ---
-                    setTimeout(() => {
-                        btn.style.display = 'inline-block'; // 或者 'block'，取决于你的布局
-                        console.log("按钮已显示");
-                    }, 1000); // 1000毫秒 = 1秒
-                }
-            });
-        }
-
+                // 注意：这里的代码会立即执行，不会等待 Python 函数完成
+                console.log("已发起调用，但 Python 函数可能还在运行");
+            }
             // 初始化
             document.addEventListener('DOMContentLoaded', () => {
                 updateUI();
@@ -302,7 +292,7 @@ class UpdateManager:
         os.makedirs(self.temp_dir, exist_ok=True)
         self.download_path = os.path.join(self.temp_dir, "update.zip")
         self.extract_path = os.path.join(self.temp_dir, "extracted")
-        self.main_exe_name = "My_app.exe"  # 主程序名称
+        self.main_exe_name = "Better-Tools.exe"  # 主程序名称
         self.password = "123"  # 主程序密码
 
         # 进度状态
@@ -556,12 +546,17 @@ class UpdaterAPI:
     def launch_app(self):
         """启动应用程序"""
         success = self.update_manager.start_main_app()
-        return {"success": success}
+        if success:
+            logger.info("主程序启动成功")
+        else:
+            logger.error("主程序启动失败")
+        return {"success": True}
 
     def test(self):
         """测试"""
         print("测试")
-        return {"success": True}
+        window: Window = webview.windows[0]
+        window.destroy()
 
 
 def main():
@@ -578,7 +573,7 @@ def main():
         js_api=api,
         frameless=False,
     )
-    setattr(window, "name", "updater")
+    setattr(window, "name", "Updater")
     # 启动应用
     webview.start(debug=True)
 
