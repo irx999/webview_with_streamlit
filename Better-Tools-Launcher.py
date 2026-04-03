@@ -301,19 +301,33 @@ def main():
     """主函数"""
     api = UpdaterAPI()
 
+    # 获取屏幕信息以实现窗口居中
+    try:
+        # 获取主屏幕（通常是第一个屏幕）
+        primary_screen = webview.screens[0]
+        screen_width = primary_screen.width
+        screen_height = primary_screen.height
+
+        # 计算居中位置
+
+    except (IndexError, AttributeError):
+        # 如果无法获取屏幕信息，使用默认位置
+        screen_width = 2560
+        screen_height = 1440
+
     # 创建窗口
     window = webview.create_window(
         "Better-Tools-Launcher",
         url="Better-Tools-Launcher.html",
+        js_api=api,
         width=600,
         height=300,
         resizable=False,
-        js_api=api,
         frameless=False,
         transparent=True,
         easy_drag=True,
-        # x=50,
-        # y=50,
+        x=(screen_width - 600) // 2,
+        y=(screen_height - 300) // 2,
     )
     setattr(window, "name", "Better-Tools-Launcher")
     # 启动应用

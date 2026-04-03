@@ -329,6 +329,11 @@ class AutoBuildUpdateApp:
             pyi_args.extend(["--name", options.name])
         if options.distpath:
             pyi_args.extend(["--distpath", options.distpath])
+            # 处理 add-data
+        if options.add_data:
+            for data_group in options.add_data:
+                for item in data_group:
+                    pyi_args.extend(["--add-data", item])
 
         # 更新程序通常为单文件模式
         pyi_args.append("--onefile")
@@ -349,6 +354,9 @@ class AutoBuildUpdateApp:
             non_interactive=True,
             onedir=False,
             distpath="dist",
+            add_data=[
+                ["Better-Tools-Launcher.html:."],
+            ],
         )
         AutoBuildUpdateApp.build(options)
 
