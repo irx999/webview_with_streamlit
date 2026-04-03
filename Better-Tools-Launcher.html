@@ -246,6 +246,7 @@
     <script>
       let updateCompleted = false;
       let isProcessing = false;
+      let pywebviewReady = false;
 
       function showLoading() {
         document.getElementById("loading-icon").style.display = "block";
@@ -256,6 +257,9 @@
       }
 
       function updateUI() {
+        if (!pywebviewReady) {
+          return; // 如果pywebview还没准备好，不要尝试调用API
+        }
         pywebview.api.get_status().then((status) => {
           // 更新主状态
           document.getElementById("status-main").textContent =
@@ -316,10 +320,16 @@
 
           // 更新按钮状态
           document.getElementById("updateBtn").disabled = isProcessing;
+        }).catch((error) => {
+          console.error("获取状态失败:", error);
         });
       }
 
       function startUpdate() {
+        if (!pywebviewReady) {
+          console.warn("pywebview API 还未准备好");
+          return;
+        }
         document.getElementById("updateBtn").disabled = true;
         showLoading();
         pywebview.api.check_and_update().then(() => {
@@ -330,10 +340,18 @@
               clearInterval(interval);
             }
           }, 500);
+        }).catch((error) => {
+          console.error("检查更新失败:", error);
+          hideLoading();
+          document.getElementById("updateBtn").disabled = false;
         });
       }
 
       function launchApp() {
+        if (!pywebviewReady) {
+          console.warn("pywebview API 还未准备好");
+          return;
+        }
         // 先显示"正在启动..."状态
         document.getElementById("status-main").textContent =
           "正在启动主程序...";
@@ -370,6 +388,10 @@
           });
       }
       function test() {
+        if (!pywebviewReady) {
+          console.warn("pywebview API 还未准备好");
+          return;
+        }
         // 2. 调用 Python 的 test 函数
         // 注意：这里假设你已经在 Python 端暴露了 api
         pywebview.api.windows_destroy().then((result) => {
@@ -387,12 +409,29 @@
               console.log("按钮已显示");
             }, 1000); // 1000毫秒 = 1秒
           }
+        }).catch((error) => {
+          console.error("测试函数调用失败:", error);
         });
       }
 
-      // 初始化
-      document.addEventListener("DOMContentLoaded", () => {
+      // 监听 pywebview ready 事件
+      window.addEventListener('pywebviewready', function() {
+        pywebviewReady = true;
+        console.log("pywebview API 已准备就绪");
+        // 初始化UI
         updateUI();
+      });
+
+      // 初始化（作为后备方案）
+      document.addEventListener("DOMContentLoaded", () => {
+        // 如果pywebviewready事件没有触发，在DOM加载完成后也尝试初始化
+        setTimeout(() => {
+          if (!pywebviewReady) {
+            pywebviewReady = true;
+            updateUI();
+          }
+        }, 100);
+        // 继续定期更新UI
         setInterval(updateUI, 1000);
       });
     </script>

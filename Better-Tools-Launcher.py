@@ -325,15 +325,14 @@ def main():
         resizable=False,
         frameless=False,
         transparent=True,
+        shadow=True,
         easy_drag=True,
         x=(screen_width - 600) // 2,
         y=(screen_height - 300) // 2,
     )
     setattr(window, "name", "Better-Tools-Launcher")
-    # 启动应用
-    webview.start(
-        debug=True,
-    )
+    # 启动应用 - 正确的调用方式
+    webview.start(debug=True)
 
 
 if __name__ == "__main__":
