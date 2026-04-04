@@ -232,12 +232,8 @@ class UpdaterAPI:
                     return
 
                 # 获取下载URL
-                if "browser_download_url" in release_info:
-                    download_url = release_info["browser_download_url"]
-                elif "assets" in release_info and len(release_info["assets"]) > 0:
-                    download_url = release_info["assets"][0].get(
-                        "browser_download_url", ""
-                    )
+                if "download_url" in release_info:
+                    download_url = release_info["download_url"]
                 else:
                     self.update_manager.current_status = "下载链接无效"
                     return
@@ -291,7 +287,7 @@ class UpdaterAPI:
             return {"success": False, "message": message}
 
     def windows_destroy(self):
-        """测试"""
+        """关闭"""
         logger.info("windows_destroy")
         window: Window = webview.windows[0]
         window.destroy()
@@ -332,7 +328,7 @@ def main():
     )
     setattr(window, "name", "Better-Tools-Launcher")
     # 启动应用 - 正确的调用方式
-    webview.start(debug=True)
+    webview.start(debug=False)
 
 
 if __name__ == "__main__":

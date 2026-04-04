@@ -329,6 +329,8 @@ class AutoBuildUpdateApp:
             pyi_args.extend(["--name", options.name])
         if options.distpath:
             pyi_args.extend(["--distpath", options.distpath])
+        if not options.debug_console:
+            pyi_args.append("--noconsole")
             # 处理 add-data
         if options.add_data:
             for data_group in options.add_data:
@@ -340,6 +342,8 @@ class AutoBuildUpdateApp:
 
         print(f"\n🔧 正在构建更新程序：{options.name}")
         PyInstaller.__main__.run(pyi_args)
+
+        _delete_build_artifacts(options.name)
         print("✅ 更新程序构建完成。")
 
     @staticmethod
@@ -352,6 +356,7 @@ class AutoBuildUpdateApp:
             product_name="Better-Tools-Launcher",
             version="0.0.1",
             non_interactive=True,
+            debug_console=False,
             onedir=False,
             distpath="dist",
             add_data=[

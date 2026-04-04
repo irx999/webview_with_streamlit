@@ -17,3 +17,10 @@ logs/
 config.json
 config.toml
 uploads
+
+
+*app-*
+
+
+
+Better-Tools.exe
