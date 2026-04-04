@@ -103,13 +103,12 @@
         font-size: 12px;
         font-weight: 500;
         color: #4a5568;
-        min-height: 60px;
-        margin-top: 4px;
+        width: 320px;
+        height: 80px;
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* 恢复正常的列方向 */
         gap: 4px;
         max-height: 80px;
-        overflow-y: auto;
       }
 
       .status-item {
@@ -143,27 +142,6 @@
         background: linear-gradient(90deg, #4facfe, #00f2fe); /* 渐变色进度条 */
         width: 0%;
         transition: width 0.3s ease;
-      }
-
-      /* 修改为圆环样式 */
-      .loading-icon {
-        width: 24px;
-        height: 24px;
-        border: 2px solid rgba(226, 232, 240, 0.4);
-        border-top: 2px solid #4facfe;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 8px 0;
-        display: none;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
       }
 
       .btn {
@@ -230,10 +208,10 @@
         <div class="status-container" id="status-container">
           <div class="status-item">准备就绪</div>
         </div>
+        <div class="status-detail" id="status-detail"></div>
         <div class="progress-bar">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <div class="loading-icon" id="loading-icon"></div>
         <div class="buttons">
           <button
             class="btn btn-primary"
@@ -257,100 +235,88 @@
       let isProcessing = false;
       let pywebviewReady = false;
 
-      function showLoading() {
-        document.getElementById("loading-icon").style.display = "block";
-      }
-
-      function hideLoading() {
-        document.getElementById("loading-icon").style.display = "none";
-      }
-
       function updateStatusDisplay(statusHistory) {
         const statusContainer = document.getElementById("status-container");
         statusContainer.innerHTML = "";
-        
-        // 显示所有历史状态（最多显示最后5条）
-        const displayHistory = statusHistory.slice(-5);
-        displayHistory.forEach(status => {
+
+        // 显示所有历史状态（最多显示最后4条，确保不会超出容器高度）
+        const displayHistory = statusHistory.slice(-4);
+        displayHistory.forEach((status) => {
           const statusItem = document.createElement("div");
           statusItem.className = "status-item";
           statusItem.textContent = status;
           statusContainer.appendChild(statusItem);
         });
-        
-        // 滚动到底部
-        statusContainer.scrollTop = statusContainer.scrollHeight;
+
+        // 由于使用了 overflow: hidden，不需要手动滚动
+        // 最新的状态会自动显示在底部
       }
 
       function updateUI() {
         if (!pywebviewReady) {
           return; // 如果pywebview还没准备好，不要尝试调用API
         }
-        pywebview.api.get_status().then((status) => {
-          // 更新状态历史显示
-          updateStatusDisplay(status.status_history);
+        pywebview.api
+          .get_status()
+          .then((status) => {
+            // 更新状态历史显示
+            updateStatusDisplay(status.status_history);
 
-          // 更新详细状态和进度
-          let detailText = "";
-          let progressPercent = 0;
+            // 更新详细状态和进度
+            let detailText = "";
+            let progressPercent = 0;
 
-          if (status.current_status.includes("正在下载")) {
-            detailText = `下载进度: ${status.download_progress}%`;
-            progressPercent = status.download_progress;
-          } else if (status.current_status.includes("正在解压")) {
-            detailText = `解压进度: ${status.extract_progress}%`;
-            progressPercent = status.extract_progress;
-          } else if (status.current_status.includes("正在替换文件")) {
-            detailText = "文件替换中...";
-            progressPercent = 50;
-          } else if (
-            status.current_status.includes("准备就绪") ||
-            status.current_status.includes("已是最新版本") ||
-            status.current_status.includes("启动成功")
-          ) {
-            detailText = "";
-            progressPercent = 0;
-          } else {
-            detailText = status.current_status;
-            progressPercent = 0;
-          }
+            if (status.current_status.includes("正在下载")) {
+              detailText = `下载进度: ${status.download_progress}%`;
+              progressPercent = status.download_progress;
+            } else if (status.current_status.includes("正在解压")) {
+              detailText = `解压进度: ${status.extract_progress}%`;
+              progressPercent = status.extract_progress;
+            } else if (status.current_status.includes("正在替换文件")) {
+              detailText = "文件替换中...";
+              progressPercent = 50;
+            } else if (
+              status.current_status.includes("准备就绪") ||
+              status.current_status.includes("已是最新版本") ||
+              status.current_status.includes("启动成功")
+            ) {
+              detailText = "";
+              progressPercent = 0;
+            } else {
+              detailText = status.current_status;
+              progressPercent = 0;
+            }
 
-          document.getElementById("status-detail").textContent = detailText;
-          document.getElementById("progress-fill").style.width =
-            progressPercent + "%";
+            document.getElementById("status-detail").textContent = detailText;
+            document.getElementById("progress-fill").style.width =
+              progressPercent + "%";
 
-          // 检查是否在处理中
-          isProcessing =
-            status.current_status !== "准备就绪" &&
-            !status.current_status.includes("更新完成") &&
-            status.current_status !== "已是最新版本" &&
-            !status.current_status.includes("启动成功");
+            // 检查是否在处理中
+            isProcessing =
+              status.current_status !== "准备就绪" &&
+              !status.current_status.includes("更新完成") &&
+              status.current_status !== "已是最新版本" &&
+              !status.current_status.includes("启动成功");
 
-          if (isProcessing) {
-            showLoading();
-          } else {
-            hideLoading();
-          }
+            // 如果更新完成，显示启动按钮
+            if (
+              status.current_status.includes("更新完成") ||
+              status.current_status === "已是最新版本"
+            ) {
+              updateCompleted = true;
+              document.getElementById("updateBtn").style.display = "none";
+              document.getElementById("launchBtn").style.display =
+                "inline-flex";
+            }
 
-          // 如果更新完成，显示启动按钮
-          if (
-            status.current_status.includes("更新完成") ||
-            status.current_status === "已是最新版本"
-          ) {
-            updateCompleted = true;
-            document.getElementById("updateBtn").style.display = "none";
-            document.getElementById("launchBtn").style.display = "inline-flex";
-            hideLoading();
-          }
-
-          // 更新按钮状态 - 确保处理完成后按钮可点击
-          document.getElementById("updateBtn").disabled = isProcessing;
-        }).catch((error) => {
-          console.error("获取状态失败:", error);
-          // 确保在错误情况下按钮也可点击
-          document.getElementById("updateBtn").disabled = false;
-          hideLoading();
-        });
+            // 更新按钮状态 - 确保处理完成后按钮可点击
+            document.getElementById("updateBtn").disabled = isProcessing;
+          })
+          .catch((error) => {
+            console.error("获取状态失败:", error);
+            // 确保在错误情况下按钮也可点击
+            document.getElementById("updateBtn").disabled = false;
+          });
       }
 
       function startUpdate() {
@@ -359,21 +325,22 @@
           return;
         }
         document.getElementById("updateBtn").disabled = true;
-        showLoading();
-        pywebview.api.check_and_update().then(() => {
-          // 开始轮询更新状态
-          const interval = setInterval(() => {
-            updateUI();
-            if (updateCompleted || !isProcessing) {
-              clearInterval(interval);
-            }
-          }, 500);
-        }).catch((error) => {
-          console.error("检查更新失败:", error);
-          hideLoading();
-          // 确保检测更新失败时按钮可以再次点击
-          document.getElementById("updateBtn").disabled = false;
-        });
+        pywebview.api
+          .check_and_update()
+          .then(() => {
+            // 开始轮询更新状态
+            const interval = setInterval(() => {
+              updateUI();
+              if (updateCompleted || !isProcessing) {
+                clearInterval(interval);
+              }
+            }, 500);
+          })
+          .catch((error) => {
+            console.error("检查更新失败:", error);
+            // 确保检测更新失败时按钮可以再次点击
+            document.getElementById("updateBtn").disabled = false;
+          });
       }
 
       function launchApp() {
@@ -386,9 +353,9 @@
         const statusItem = document.createElement("div");
         statusItem.className = "status-item";
         statusItem.textContent = "正在启动主程序...";
+        // 由于使用了 flex-direction: column-reverse，新元素会自动显示在底部
         statusContainer.appendChild(statusItem);
-        statusContainer.scrollTop = statusContainer.scrollHeight;
-        
+
         showLoading();
 
         pywebview.api
@@ -400,7 +367,7 @@
               successItem.className = "status-item";
               successItem.textContent = "启动成功";
               statusContainer.appendChild(successItem);
-              
+
               // 2秒后关闭窗口
               setTimeout(() => {
                 pywebview.api.windows_destroy();
@@ -409,11 +376,11 @@
               // 启动失败
               const failItem = document.createElement("div");
               failItem.className = "status-item";
-              failItem.textContent = result.message || "主程序启动失败，请检查日志";
+              failItem.textContent =
+                result.message || "主程序启动失败，请检查日志";
               statusContainer.appendChild(failItem);
               hideLoading();
             }
-            statusContainer.scrollTop = statusContainer.scrollHeight;
           })
           .catch((error) => {
             // 处理异常情况
@@ -422,7 +389,6 @@
             errorItem.textContent = "发生未知错误，请检查日志";
             statusContainer.appendChild(errorItem);
             hideLoading();
-            statusContainer.scrollTop = statusContainer.scrollHeight;
           });
       }
       function test() {
@@ -432,28 +398,31 @@
         }
         // 2. 调用 Python 的 test 函数
         // 注意：这里假设你已经在 Python 端暴露了 api
-        pywebview.api.windows_destroy().then((result) => {
-          // 3. 判断返回结果是否成功
-          if (result.success) {
-            const btn = document.getElementById("updateBtn");
+        pywebview.api
+          .windows_destroy()
+          .then((result) => {
+            // 3. 判断返回结果是否成功
+            if (result.success) {
+              const btn = document.getElementById("updateBtn");
 
-            // --- 第一步：隐藏按钮 ---
-            btn.style.display = "none";
-            console.log("按钮已隐藏");
+              // --- 第一步：隐藏按钮 ---
+              btn.style.display = "none";
+              console.log("按钮已隐藏");
 
-            // --- 第二步：设置定时器，1秒后显示 ---
-            setTimeout(() => {
-              btn.style.display = "inline-block"; // 或者 'block'，取决于你的布局
-              console.log("按钮已显示");
-            }, 1000); // 1000毫秒 = 1秒
-          }
-        }).catch((error) => {
-          console.error("测试函数调用失败:", error);
-        });
+              // --- 第二步：设置定时器，1秒后显示 ---
+              setTimeout(() => {
+                btn.style.display = "inline-block"; // 或者 'block'，取决于你的布局
+                console.log("按钮已显示");
+              }, 1000); // 1000毫秒 = 1秒
+            }
+          })
+          .catch((error) => {
+            console.error("测试函数调用失败:", error);
+          });
       }
 
       // 监听 pywebview ready 事件
-      window.addEventListener('pywebviewready', function() {
+      window.addEventListener("pywebviewready", function () {
         pywebviewReady = true;
         console.log("pywebview API 已准备就绪");
         // 初始化UI
