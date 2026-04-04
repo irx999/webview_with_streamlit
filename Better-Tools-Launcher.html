@@ -93,7 +93,8 @@
 
       /* 多层状态显示区域 - 改为累计显示 */
       .status-container {
-        overflow: hidden; /* 禁止滚动 */
+        overflow-y: auto;
+        overflow-x: hidden;
         text-align: left;
         font-size: 12px;
         font-weight: 500;
@@ -104,6 +105,13 @@
         flex-direction: column; /* 恢复正常的列方向 */
         gap: 4px;
         max-height: 80px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+      }
+
+      .status-container::-webkit-scrollbar {
+        width: 0;
+        height: 0;
       }
 
       .status-item {
@@ -120,7 +128,7 @@
       .status-detail {
         font-weight: 400;
         color: #718096;
-        font-size: 11px;
+        font-size: 12px;
       }
 
       .progress-bar {
@@ -232,6 +240,22 @@
       let isProcessing = false;
       let pywebviewReady = false;
 
+      function formatBytes(bytes) {
+        if (!bytes || bytes < 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let value = bytes;
+        let unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+          value /= 1024;
+          unitIndex += 1;
+        }
+        return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 2)} ${units[unitIndex]}`;
+      }
+
+      function formatSpeed(bytesPerSecond) {
+        return `${formatBytes(bytesPerSecond)}/s`;
+      }
+
       function updateStatusDisplay(statusHistory) {
         const statusContainer = document.getElementById("status-container");
         statusContainer.innerHTML = "";
@@ -264,7 +288,11 @@
             let progressPercent = 0;
 
             if (status.current_status.includes("正在下载")) {
-              detailText = `下载进度: ${status.download_progress}%`;
+              const downloadedText =
+                status.total_size > 0
+                  ? `${formatBytes(status.downloaded_size)}/${formatBytes(status.total_size)}`
+                  : `已下载: ${formatBytes(status.downloaded_size)}`;
+              detailText = `下载进度: ${status.download_progress}% (${downloadedText}) ${formatSpeed(status.download_speed)}`;
               progressPercent = status.download_progress;
             } else if (status.current_status.includes("正在解压")) {
               detailText = `解压进度: ${status.extract_progress}%`;

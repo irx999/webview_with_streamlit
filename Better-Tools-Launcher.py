@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 
 import requests
 import webview
@@ -34,6 +35,9 @@ class UpdateManager:
         # 进度状态
         self.download_progress = 0
         self.extract_progress = 0
+        self.downloaded_size = 0
+        self.total_size = 0
+        self.download_speed = 0
         self.current_status = "准备就绪"
         # 添加状态历史记录
         self.status_history = ["准备就绪"]
@@ -94,18 +98,33 @@ class UpdateManager:
 
             total_size = int(response.headers.get("content-length", 0))
             downloaded = 0
+            self.total_size = total_size
+            self.downloaded_size = 0
+            self.download_speed = 0
+            last_time = time.time()
+            last_bytes = 0
 
             with open(self.download_path, "wb") as file:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         file.write(chunk)
                         downloaded += len(chunk)
+                        self.downloaded_size = downloaded
                         if total_size > 0:
                             self.download_progress = int(
                                 (downloaded / total_size) * 100
                             )
+                        now = time.time()
+                        elapsed = now - last_time
+                        if elapsed >= 0.2:
+                            self.download_speed = int(
+                                (downloaded - last_bytes) / elapsed
+                            )
+                            last_time = now
+                            last_bytes = downloaded
 
             self.download_progress = 100
+            self.download_speed = 0
             self.add_status("下载完成")
             logger.info("下载完成")
             return True
@@ -243,6 +262,9 @@ class UpdaterAPI:
             "extract_progress": self.update_manager.extract_progress,
             "current_status": self.update_manager.current_status,
             "status_history": self.update_manager.get_status_history(),
+            "downloaded_size": self.update_manager.downloaded_size,
+            "total_size": self.update_manager.total_size,
+            "download_speed": self.update_manager.download_speed,
         }
 
     def check_and_update(self):
