@@ -1,0 +1,509 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>应用程序更新器</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* 移除所有滚动条 */
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: rgb(255, 255, 255); /* 提高透明度 - 从0.3降低到0.1 */
+        backdrop-filter: blur(15px); /* 增加模糊度 */
+        -webkit-backdrop-filter: blur(15px); /* Safari兼容性 */
+        width: 600px;
+        height: 260px;
+        overflow: hidden; /* 禁止滚动 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3;
+        margin: 0;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.3); /* 提高透明度 - 从0.6降低到0.3 */
+        backdrop-filter: blur(15px); /* 增加模糊度 */
+        -webkit-backdrop-filter: blur(15px); /* Safari兼容性 */
+        width: 600px;
+        height: 260px;
+        overflow: hidden;
+        display: flex;
+        position: relative;
+        border-radius: 12px; /* 添加圆角使外观更现代 */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* 添加阴影增强层次感 */
+      }
+
+      .logo-section {
+        flex: 0 0 40%; /* 40% 宽度 */
+        height: 100%;
+        display: flex;
+        align-items: center; /* 垂直居中 - 这会让logo在282px高度的中间，即141px位置 */
+        justify-content: center; /* 水平居中在40%区域内 */
+        position: relative;
+      }
+
+      .logo-section img {
+        max-width: 120px;
+        max-height: 120px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        /* 确保图片本身不会影响居中 */
+        display: block;
+      }
+
+      .progress-section {
+        flex: 0 0 60%; /* 60% 宽度 */
+        padding: 12px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+      }
+
+      .header {
+        color: #2d3748;
+        text-align: left;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        font-weight: bold;
+        font-style: italic;
+        margin-bottom: 6px;
+        letter-spacing: -0.2px;
+      }
+
+      .header p {
+        color: #718096;
+        font-size: 13px;
+        line-height: 1.4;
+        font-weight: 400;
+      }
+
+      /* 多层状态显示区域 - 改为累计显示 */
+      .status-container {
+        overflow-y: auto;
+        overflow-x: hidden;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 500;
+        color: #4a5568;
+        width: 320px;
+        height: 80px;
+        display: flex;
+        flex-direction: column; /* 恢复正常的列方向 */
+        gap: 4px;
+        max-height: 80px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+      }
+
+      .status-container::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+
+      .status-item {
+        font-weight: 500;
+        color: #4a5568;
+        font-size: 12px;
+      }
+
+      .status-main {
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .status-detail {
+        font-weight: 400;
+        color: #718096;
+        font-size: 12px;
+      }
+
+      #install-path-value {
+        color: #3182ce;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(226, 232, 240, 0.2);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4facfe, #00f2fe); /* 渐变色进度条 */
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .btn-primary {
+        background: rgba(79, 172, 254, 0.7); /* 提高透明度 - 从0.85降低到0.7 */
+        color: white;
+        box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: rgba(58, 155, 239, 0.8); /* 提高透明度 - 从0.9降低到0.8 */
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(79, 172, 254, 0.4);
+      }
+
+      .btn-primary:disabled {
+        background: rgba(226, 232, 240, 0.4); /* 提高透明度 */
+        color: rgba(160, 174, 192, 0.8);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .btn-secondary {
+        background: rgba(247, 250, 252, 0.4); /* 提高透明度 */
+        color: #4a5568;
+        border: 1px solid rgba(226, 232, 240, 0.4);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(237, 242, 247, 0.5); /* 提高透明度 */
+        border-color: rgba(203, 213, 224, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo-section">
+        <img src="assets/images/launcher.png" alt="Better-tools Logo" />
+      </div>
+      <div class="progress-section">
+        <div class="header">
+          <h1>Better-Tools-Launcher</h1>
+          <p style="font-size: 12px; font-style: italic; color: #555; margin-top: 5px;">一键更新与管理工具集</p>
+          <p id="install-path">
+            当前安装目录：<span id="install-path-value">未选择</span>
+          </p>
+        </div>
+        <div class="status-container" id="status-container">
+          <div class="status-item">等待操作</div>
+        </div>
+        <div class="status-detail" id="status-detail"></div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="buttons">
+          <button
+            class="btn btn-primary"
+            id="chooseDirBtn"
+            onclick="chooseWorkDir()"
+          >
+            选择安装目录
+          </button>
+          <button
+            class="btn btn-primary"
+            id="updateBtn"
+            onclick="startUpdate()"
+          >
+            更新或安装
+          </button>
+          <button class="btn btn-primary" id="launchBtn" onclick="launchApp()">
+            启动
+          </button>
+          <button class="btn btn-primary" id="test" onclick="test()">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const els = {
+        statusContainer: document.getElementById("status-container"),
+        statusDetail: document.getElementById("status-detail"),
+        progressFill: document.getElementById("progress-fill"),
+        chooseDirBtn: document.getElementById("chooseDirBtn"),
+        updateBtn: document.getElementById("updateBtn"),
+        launchBtn: document.getElementById("launchBtn"),
+        installPath: document.getElementById("install-path"),
+        installPathValue: document.getElementById("install-path-value"),
+      };
+
+      let updateCompleted = false;
+      let isProcessing = false;
+      let pywebviewReady = false;
+
+      function formatBytes(bytes) {
+        if (!bytes || bytes < 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let value = bytes;
+        let unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+          value /= 1024;
+          unitIndex += 1;
+        }
+        return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 2)} ${units[unitIndex]}`;
+      }
+
+      function formatSpeed(bytesPerSecond) {
+        return `${formatBytes(bytesPerSecond)}/s`;
+      }
+
+      function ensureReady() {
+        if (!pywebviewReady) {
+          console.warn("pywebview API 还未准备好");
+          return false;
+        }
+        return true;
+      }
+
+      function updateStatusDisplay(statusHistory) {
+        els.statusContainer.innerHTML = "";
+
+        // 显示所有历史状态（最多显示最后4条，确保不会超出容器高度）
+        const displayHistory = statusHistory.slice(-4);
+        displayHistory.forEach((status) => {
+          const statusItem = document.createElement("div");
+          statusItem.className = "status-item";
+          statusItem.textContent = status;
+          els.statusContainer.appendChild(statusItem);
+        });
+
+        // 由于使用了 overflow: hidden，不需要手动滚动
+        // 最新的状态会自动显示在底部
+      }
+
+      function updateUI() {
+        if (!pywebviewReady) {
+          return; // 如果pywebview还没准备好，不要尝试调用API
+        }
+        pywebview.api
+          .get_status()
+          .then((status) => {
+            // 更新状态历史显示
+            updateStatusDisplay(status.status_history);
+            if (status.install_dir) {
+              els.installPathValue.textContent = status.install_dir;
+            }
+
+            // 更新详细状态和进度
+            let detailText = "";
+            let progressPercent = 0;
+
+            if (status.current_status.includes("正在下载")) {
+              const downloadedText =
+                status.total_size > 0
+                  ? `${formatBytes(status.downloaded_size)}/${formatBytes(status.total_size)}`
+                  : `已下载: ${formatBytes(status.downloaded_size)}`;
+              detailText = `下载进度: ${status.download_progress}% (${downloadedText}) ${formatSpeed(status.download_speed)}`;
+              progressPercent = status.download_progress;
+            } else if (status.current_status.includes("正在解压")) {
+              detailText = `解压进度: ${status.extract_progress}%`;
+              progressPercent = status.extract_progress;
+            } else if (status.current_status.includes("正在替换文件")) {
+              detailText = "文件替换中...";
+              progressPercent = 50;
+            } else if (
+              status.current_status.includes("等待操作") ||
+              status.current_status.includes("已是最新版本") ||
+              status.current_status.includes("启动成功")
+            ) {
+              detailText = "";
+              progressPercent = 0;
+            } else {
+              detailText = status.current_status;
+              progressPercent = 0;
+            }
+
+            els.statusDetail.textContent = detailText;
+            els.progressFill.style.width = progressPercent + "%";
+
+            // 检查是否在处理中
+            const isErrorStatus =
+              status.current_status.includes("失败") ||
+              status.current_status.includes("错误");
+            const isInProgressStatus =
+              status.current_status.includes("正在下载") ||
+              status.current_status.includes("正在解压") ||
+              status.current_status.includes("正在替换文件");
+            isProcessing = isInProgressStatus && !isErrorStatus;
+
+            // 如果更新完成，显示启动按钮
+            if (
+              status.current_status.includes("更新完成") ||
+              status.current_status === "已是最新版本"
+            ) {
+              updateCompleted = true;
+              els.launchBtn.style.display = "inline-flex";
+            }
+
+            // 更新按钮状态 - 确保处理完成后按钮可点击
+            els.updateBtn.disabled = isProcessing;
+          })
+          .catch((error) => {
+            console.error("获取状态失败:", error);
+            // 确保在错误情况下按钮也可点击
+            els.updateBtn.disabled = false;
+          });
+      }
+
+      function startUpdate() {
+        if (!ensureReady()) return;
+        els.updateBtn.disabled = true;
+        pywebview.api
+          .check_and_update()
+          .then(() => {
+            // 开始轮询更新状态
+            const interval = setInterval(() => {
+              updateUI();
+              if (updateCompleted || !isProcessing) {
+                clearInterval(interval);
+              }
+            }, 500);
+          })
+          .catch((error) => {
+            console.error("检查更新失败:", error);
+            // 确保检测更新失败时按钮可以再次点击
+            els.updateBtn.disabled = false;
+          });
+      }
+
+      function chooseWorkDir() {
+        if (!ensureReady()) return;
+        els.chooseDirBtn.disabled = true;
+        pywebview.api
+          .choose_work_dir()
+          .then((result) => {
+            if (result && result.success) {
+              updateUI();
+            }
+          })
+          .catch((error) => {
+            console.error("选择目录失败:", error);
+          })
+          .finally(() => {
+            els.chooseDirBtn.disabled = false;
+          });
+      }
+
+      function launchApp() {
+        if (!ensureReady()) return;
+        // 先显示"正在启动..."状态
+        const statusContainer = els.statusContainer;
+        const statusItem = document.createElement("div");
+        statusItem.className = "status-item";
+        statusItem.textContent = "正在启动主程序...";
+        // 由于使用了 flex-direction: column-reverse，新元素会自动显示在底部
+        statusContainer.appendChild(statusItem);
+        pywebview.api
+          .launch_app()
+          .then((result) => {
+            if (result.success) {
+              // 启动成功
+              const successItem = document.createElement("div");
+              successItem.className = "status-item";
+              successItem.textContent = "启动成功";
+              statusContainer.appendChild(successItem);
+
+              // 2秒后关闭窗口
+              // setTimeout(() => {
+              //   pywebview.api.windows_destroy();
+              // }, 2000);
+            } else {
+              // 启动失败
+              const failItem = document.createElement("div");
+              failItem.className = "status-item";
+              failItem.textContent =
+                result.message || "主程序启动失败，请检查日志";
+              statusContainer.appendChild(failItem);
+              hideLoading();
+            }
+          })
+          .catch((error) => {
+            // 处理异常情况
+            const errorItem = document.createElement("div");
+            errorItem.className = "status-item";
+            errorItem.textContent = "发生未知错误，请检查日志";
+            statusContainer.appendChild(errorItem);
+            hideLoading();
+          });
+      }
+      function test() {
+        if (!ensureReady()) return;
+        // 2. 调用 Python 的 test 函数
+        // 注意：这里假设你已经在 Python 端暴露了 api
+        pywebview.api
+          .windows_destroy()
+          .then((result) => {
+            // 3. 判断返回结果是否成功
+            if (result.success) {
+              const btn = els.updateBtn;
+
+              // --- 第一步：隐藏按钮 ---
+              btn.style.display = "none";
+              console.log("按钮已隐藏");
+
+              // --- 第二步：设置定时器，1秒后显示 ---
+              setTimeout(() => {
+                btn.style.display = "inline-block"; // 或者 'block'，取决于你的布局
+                console.log("按钮已显示");
+              }, 1000); // 1000毫秒 = 1秒
+            }
+          })
+          .catch((error) => {
+            console.error("测试函数调用失败:", error);
+          });
+      }
+
+      // 监听 pywebview ready 事件
+      window.addEventListener("pywebviewready", function () {
+        pywebviewReady = true;
+        console.log("pywebview API 已准备就绪");
+        // 初始化UI
+        updateUI();
+      });
+
+      // 初始化（作为后备方案）
+      document.addEventListener("DOMContentLoaded", () => {
+        // 如果pywebviewready事件没有触发，在DOM加载完成后也尝试初始化
+        setTimeout(() => {
+          if (!pywebviewReady) {
+            pywebviewReady = true;
+            updateUI();
+          }
+        }, 100);
+        // 继续定期更新UI
+        setInterval(updateUI, 1000);
+      });
+    </script>
+  </body>
+</html>

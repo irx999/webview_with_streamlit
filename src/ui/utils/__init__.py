@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 import streamlit as st
-from streamlit import session_state as ss
 
 
 def st_markdown(markdown_string):
@@ -76,12 +75,9 @@ def st_file_picker(
 
         # 如果用户取消选择，则返回当前保存的路径或默认路径
         if dir_path == "":
-            return Path(ss.get(f"{name}_file_path", os.getcwd()))
+            return Path(default)
 
-        # 保存选择的路径到 session state
-        # ss[f"{name}_file_path"] = dir_path
         return Path(dir_path)
-
     return Path(default)
 
 
@@ -121,7 +117,7 @@ def st_folder_picker(
 
         # 如果用户取消选择，则返回当前保存的路径或默认路径
         if dir_path == "":
-            return Path(ss.get(f"{name}_folder_path", os.getcwd()))
+            return Path(default)
 
         # 保存选择的路径到 session state
         # ss[f"{name}_folder_path"] = dir_path

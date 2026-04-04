@@ -106,6 +106,8 @@ def _copy_assets_to_dist(pack_path: str, dist_path: str) -> None:
             if os.path.exists(file_name):
                 shutil.copy2(file_name, os.path.join(pack_path, "assets"))
 
+        shutil.copy2(latest_json_src, "assets")
+
         print("✅ 资源文件复制完成。")
     except Exception as e:
         print(f"❌ 资源文件复制失败：{e}")
@@ -327,26 +329,40 @@ class AutoBuildUpdateApp:
             pyi_args.extend(["--name", options.name])
         if options.distpath:
             pyi_args.extend(["--distpath", options.distpath])
+        if not options.debug_console:
+            pyi_args.append("--noconsole")
+            # 处理 add-data
+        if options.add_data:
+            for data_group in options.add_data:
+                for item in data_group:
+                    pyi_args.extend(["--add-data", item])
 
         # 更新程序通常为单文件模式
         pyi_args.append("--onefile")
 
         print(f"\n🔧 正在构建更新程序：{options.name}")
         PyInstaller.__main__.run(pyi_args)
+
+        _delete_build_artifacts(options.name)
         print("✅ 更新程序构建完成。")
 
     @staticmethod
     def main() -> None:
         """更新程序构建入口。"""
         options = argparse.Namespace(
-            script="updater.py",
-            icon="assets/ico/main.ico",
-            name="updater",
-            product_name="updater",
+            script="Better-Tools-Launcher.py",
+            icon="assets/ico/Better-Tools-Launcher.ico",
+            name="Better-Tools-Launcher",
+            product_name="Better-Tools-Launcher",
             version="0.0.1",
             non_interactive=True,
+            debug_console=False,
             onedir=False,
             distpath="dist",
+            add_data=[
+                ["Better-Tools-Launcher.html:."],
+                ["assets/images/launcher.png:assets/images/"],
+            ],
         )
         AutoBuildUpdateApp.build(options)
 

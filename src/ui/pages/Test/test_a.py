@@ -2,7 +2,7 @@ import streamlit as st
 
 from src.utils.config_manager import ConfigManager
 
-app_config = ConfigManager("assets/config.json", "app_config")
+app_config = ConfigManager("config.json", "app_config")
 
 
 def test_a():
