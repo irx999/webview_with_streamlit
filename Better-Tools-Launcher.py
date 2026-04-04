@@ -15,6 +15,13 @@ from webview import Window
 
 logger.add("logs/updater.log")
 
+DOWNLOAD_CHUNK_SIZE = 8192
+SPEED_SAMPLE_INTERVAL = 0.2
+DEFAULT_WORK_DIR = os.getcwd()
+DEFAULT_MAIN_EXE = "Better-Tools.exe"
+DEFAULT_PASSWORD = "123"
+LOCAL_VERSION_FILE = "./assets/latest.json"
+
 
 class UpdateManager:
     """现代化更新管理器"""
@@ -24,13 +31,14 @@ class UpdateManager:
             "https://irx999.fun/img/assets/Better-Tools/latest.json",
         ]
         # 修改默认工作目录为 test_file/launcher
-        self.work_dir = "./test_file/launcher"
+        self.work_dir = DEFAULT_WORK_DIR
         os.makedirs(self.work_dir, exist_ok=True)
         self.download_path = os.path.join(self.work_dir, "update.zip")
         self.extract_path = os.path.join(self.work_dir, "extracted")
-        self.target_dir = self.work_dir  # 目标目录设置为工作目录本身
-        self.main_exe_name = "Better-Tools.exe"  # 主程序名称
-        self.password = "123"  # 主程序密码
+        self.install_dir = DEFAULT_WORK_DIR
+        self.target_dir = self.install_dir  # 目标目录设置为安装目录
+        self.main_exe_name = DEFAULT_MAIN_EXE  # 主程序名称
+        self.password = DEFAULT_PASSWORD  # 主程序密码
 
         # 进度状态
         self.download_progress = 0
@@ -38,14 +46,33 @@ class UpdateManager:
         self.downloaded_size = 0
         self.total_size = 0
         self.download_speed = 0
-        self.current_status = "准备就绪"
+        self.current_status = "等待操作"
         # 添加状态历史记录
-        self.status_history = ["准备就绪"]
+        self.status_history = ["等待操作"]
 
     def add_status(self, status):
         """添加状态到历史记录"""
         self.current_status = status
         self.status_history.append(status)
+
+    def set_work_dir(self, new_work_dir):
+        """设置下载/解压工作目录"""
+        if not new_work_dir:
+            return False
+        self.work_dir = new_work_dir
+        os.makedirs(self.work_dir, exist_ok=True)
+        self.download_path = os.path.join(self.work_dir, "update.zip")
+        self.extract_path = os.path.join(self.work_dir, "extracted")
+        return True
+
+    def set_install_dir(self, new_install_dir):
+        """设置安装目录（替换文件的目标目录）"""
+        if not new_install_dir:
+            return False
+        self.install_dir = new_install_dir
+        os.makedirs(self.install_dir, exist_ok=True)
+        self.target_dir = self.install_dir
+        return True
 
     def get_status_history(self):
         """获取状态历史记录"""
@@ -66,7 +93,7 @@ class UpdateManager:
 
     def get_local_version(self):
         """获取本地版本"""
-        local_file = "./assets/latest.json"
+        local_file = LOCAL_VERSION_FILE
         if os.path.exists(local_file):
             try:
                 with open(local_file, "r", encoding="utf-8") as f:
@@ -105,7 +132,7 @@ class UpdateManager:
             last_bytes = 0
 
             with open(self.download_path, "wb") as file:
-                for chunk in response.iter_content(chunk_size=8192):
+                for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
                     if chunk:
                         file.write(chunk)
                         downloaded += len(chunk)
@@ -116,7 +143,7 @@ class UpdateManager:
                             )
                         now = time.time()
                         elapsed = now - last_time
-                        if elapsed >= 0.2:
+                        if elapsed >= SPEED_SAMPLE_INTERVAL:
                             self.download_speed = int(
                                 (downloaded - last_bytes) / elapsed
                             )
@@ -223,7 +250,9 @@ class UpdateManager:
                     item_path = os.path.join(self.work_dir, item)
                     if os.path.isfile(item_path):
                         os.remove(item_path)
-                    elif os.path.isdir(item_path) and item != "extracted":
+                    elif (
+                        os.path.isdir(item_path) and item != "Better-Tools-Launcher.exe"
+                    ):
                         shutil.rmtree(item_path)
                 logger.info("临时文件清理完成")
         except Exception as e:
@@ -253,7 +282,6 @@ class UpdaterAPI:
 
     def __init__(self):
         self.update_manager = UpdateManager()
-        self.update_thread = None
 
     def get_status(self):
         """获取当前状态"""
@@ -265,6 +293,8 @@ class UpdaterAPI:
             "downloaded_size": self.update_manager.downloaded_size,
             "total_size": self.update_manager.total_size,
             "download_speed": self.update_manager.download_speed,
+            "work_dir": self.update_manager.work_dir,
+            "install_dir": self.update_manager.install_dir,
         }
 
     def check_and_update(self):
@@ -325,8 +355,7 @@ class UpdaterAPI:
                 logger.error(error_msg)
                 self.update_manager.add_status(error_msg)
 
-        self.update_thread = threading.Thread(target=update_process, daemon=True)
-        self.update_thread.start()
+        threading.Thread(target=update_process, daemon=True).start()
         return {"success": True}
 
     def launch_app(self):
@@ -346,6 +375,18 @@ class UpdaterAPI:
         logger.info("windows_destroy")
         window: Window = webview.windows[0]
         window.destroy()
+
+    def choose_work_dir(self):
+        """选择工作目录"""
+        window: Window = webview.windows[0]
+        result = window.create_file_dialog(webview.FOLDER_DIALOG)  # type: ignore
+        if not result:
+            return {"success": False, "message": "未选择目录"}
+        selected_dir = result[0]
+        if self.update_manager.set_install_dir(selected_dir):
+            self.update_manager.add_status(f"安装目录: {selected_dir}")
+            return {"success": True, "path": selected_dir}
+        return {"success": False, "message": "设置目录失败"}
 
 
 def main():

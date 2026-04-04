@@ -63,7 +63,7 @@
 
       .progress-section {
         flex: 0 0 60%; /* 60% 宽度 */
-        padding: 24px 20px;
+        padding: 12px 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -78,8 +78,9 @@
       }
 
       .header h1 {
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 28px;
+        font-weight: bold;
+        font-style: italic;
         margin-bottom: 6px;
         letter-spacing: -0.2px;
       }
@@ -129,6 +130,10 @@
         font-weight: 400;
         color: #718096;
         font-size: 12px;
+      }
+
+      #install-path-value {
+        color: #3182ce;
       }
 
       .progress-bar {
@@ -199,19 +204,18 @@
   <body>
     <div class="container">
       <div class="logo-section">
-        <img
-
-          src="assets/images/launcher.png"
-          alt="Better-tools Logo"
-        />
+        <img src="assets/images/launcher.png" alt="Better-tools Logo" />
       </div>
       <div class="progress-section">
         <div class="header">
-          <h1>Better-Tools</h1>
-          <p>WebView with Streamlit Desktop Application</p>
+          <h1>Better-Tools-Launcher</h1>
+          <p style="font-size: 14px; font-style: italic; color: #555; margin-top: 5px;">一键更新与管理工具集</p>
+          <p id="install-path">
+            当前安装目录：<span id="install-path-value">未选择</span>
+          </p>
         </div>
         <div class="status-container" id="status-container">
-          <div class="status-item">准备就绪</div>
+          <div class="status-item">等待操作</div>
         </div>
         <div class="status-detail" id="status-detail"></div>
         <div class="progress-bar">
@@ -220,13 +224,20 @@
         <div class="buttons">
           <button
             class="btn btn-primary"
+            id="chooseDirBtn"
+            onclick="chooseWorkDir()"
+          >
+            选择安装目录
+          </button>
+          <button
+            class="btn btn-primary"
             id="updateBtn"
             onclick="startUpdate()"
           >
-            检测更新
+            更新或安装
           </button>
           <button class="btn btn-primary" id="launchBtn" onclick="launchApp()">
-            启动主程序
+            启动
           </button>
           <button class="btn btn-primary" id="test" onclick="test()">
             关闭
@@ -236,6 +247,17 @@
     </div>
 
     <script>
+      const els = {
+        statusContainer: document.getElementById("status-container"),
+        statusDetail: document.getElementById("status-detail"),
+        progressFill: document.getElementById("progress-fill"),
+        chooseDirBtn: document.getElementById("chooseDirBtn"),
+        updateBtn: document.getElementById("updateBtn"),
+        launchBtn: document.getElementById("launchBtn"),
+        installPath: document.getElementById("install-path"),
+        installPathValue: document.getElementById("install-path-value"),
+      };
+
       let updateCompleted = false;
       let isProcessing = false;
       let pywebviewReady = false;
@@ -256,9 +278,16 @@
         return `${formatBytes(bytesPerSecond)}/s`;
       }
 
+      function ensureReady() {
+        if (!pywebviewReady) {
+          console.warn("pywebview API 还未准备好");
+          return false;
+        }
+        return true;
+      }
+
       function updateStatusDisplay(statusHistory) {
-        const statusContainer = document.getElementById("status-container");
-        statusContainer.innerHTML = "";
+        els.statusContainer.innerHTML = "";
 
         // 显示所有历史状态（最多显示最后4条，确保不会超出容器高度）
         const displayHistory = statusHistory.slice(-4);
@@ -266,7 +295,7 @@
           const statusItem = document.createElement("div");
           statusItem.className = "status-item";
           statusItem.textContent = status;
-          statusContainer.appendChild(statusItem);
+          els.statusContainer.appendChild(statusItem);
         });
 
         // 由于使用了 overflow: hidden，不需要手动滚动
@@ -282,6 +311,9 @@
           .then((status) => {
             // 更新状态历史显示
             updateStatusDisplay(status.status_history);
+            if (status.install_dir) {
+              els.installPathValue.textContent = status.install_dir;
+            }
 
             // 更新详细状态和进度
             let detailText = "";
@@ -301,7 +333,7 @@
               detailText = "文件替换中...";
               progressPercent = 50;
             } else if (
-              status.current_status.includes("准备就绪") ||
+              status.current_status.includes("等待操作") ||
               status.current_status.includes("已是最新版本") ||
               status.current_status.includes("启动成功")
             ) {
@@ -312,16 +344,18 @@
               progressPercent = 0;
             }
 
-            document.getElementById("status-detail").textContent = detailText;
-            document.getElementById("progress-fill").style.width =
-              progressPercent + "%";
+            els.statusDetail.textContent = detailText;
+            els.progressFill.style.width = progressPercent + "%";
 
             // 检查是否在处理中
-            isProcessing =
-              status.current_status !== "准备就绪" &&
-              !status.current_status.includes("更新完成") &&
-              status.current_status !== "已是最新版本" &&
-              !status.current_status.includes("启动成功");
+            const isErrorStatus =
+              status.current_status.includes("失败") ||
+              status.current_status.includes("错误");
+            const isInProgressStatus =
+              status.current_status.includes("正在下载") ||
+              status.current_status.includes("正在解压") ||
+              status.current_status.includes("正在替换文件");
+            isProcessing = isInProgressStatus && !isErrorStatus;
 
             // 如果更新完成，显示启动按钮
             if (
@@ -329,27 +363,22 @@
               status.current_status === "已是最新版本"
             ) {
               updateCompleted = true;
-              document.getElementById("updateBtn").style.display = "none";
-              document.getElementById("launchBtn").style.display =
-                "inline-flex";
+              els.launchBtn.style.display = "inline-flex";
             }
 
             // 更新按钮状态 - 确保处理完成后按钮可点击
-            document.getElementById("updateBtn").disabled = isProcessing;
+            els.updateBtn.disabled = isProcessing;
           })
           .catch((error) => {
             console.error("获取状态失败:", error);
             // 确保在错误情况下按钮也可点击
-            document.getElementById("updateBtn").disabled = false;
+            els.updateBtn.disabled = false;
           });
       }
 
       function startUpdate() {
-        if (!pywebviewReady) {
-          console.warn("pywebview API 还未准备好");
-          return;
-        }
-        document.getElementById("updateBtn").disabled = true;
+        if (!ensureReady()) return;
+        els.updateBtn.disabled = true;
         pywebview.api
           .check_and_update()
           .then(() => {
@@ -364,17 +393,32 @@
           .catch((error) => {
             console.error("检查更新失败:", error);
             // 确保检测更新失败时按钮可以再次点击
-            document.getElementById("updateBtn").disabled = false;
+            els.updateBtn.disabled = false;
+          });
+      }
+
+      function chooseWorkDir() {
+        if (!ensureReady()) return;
+        els.chooseDirBtn.disabled = true;
+        pywebview.api
+          .choose_work_dir()
+          .then((result) => {
+            if (result && result.success) {
+              updateUI();
+            }
+          })
+          .catch((error) => {
+            console.error("选择目录失败:", error);
+          })
+          .finally(() => {
+            els.chooseDirBtn.disabled = false;
           });
       }
 
       function launchApp() {
-        if (!pywebviewReady) {
-          console.warn("pywebview API 还未准备好");
-          return;
-        }
+        if (!ensureReady()) return;
         // 先显示"正在启动..."状态
-        const statusContainer = document.getElementById("status-container");
+        const statusContainer = els.statusContainer;
         const statusItem = document.createElement("div");
         statusItem.className = "status-item";
         statusItem.textContent = "正在启动主程序...";
@@ -417,10 +461,7 @@
           });
       }
       function test() {
-        if (!pywebviewReady) {
-          console.warn("pywebview API 还未准备好");
-          return;
-        }
+        if (!ensureReady()) return;
         // 2. 调用 Python 的 test 函数
         // 注意：这里假设你已经在 Python 端暴露了 api
         pywebview.api
@@ -428,7 +469,7 @@
           .then((result) => {
             // 3. 判断返回结果是否成功
             if (result.success) {
-              const btn = document.getElementById("updateBtn");
+              const btn = els.updateBtn;
 
               // --- 第一步：隐藏按钮 ---
               btn.style.display = "none";
