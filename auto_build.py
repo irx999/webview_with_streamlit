@@ -361,6 +361,7 @@ class AutoBuildUpdateApp:
             distpath="dist",
             add_data=[
                 ["Better-Tools-Launcher.html:."],
+                ["assets/images/launcher.png:assets/images/"],
             ],
         )
         AutoBuildUpdateApp.build(options)
