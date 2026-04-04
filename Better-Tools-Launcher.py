@@ -267,9 +267,7 @@ class UpdateManager:
             if os.path.exists(main_exe):
                 logger.info("启动主程序...")
                 # 使用 -s 参数和密码启动
-                subprocess.Popen(
-                    [main_exe, "-s", self.password], cwd=self.install_dir
-                )
+                subprocess.Popen([main_exe, "-s", self.password], cwd=self.install_dir)
                 return True, f"主程序启动成功: {main_exe}"
             else:
                 error_msg = f"主程序不存在/或者当前是开发者模式: {main_exe}"
@@ -428,7 +426,9 @@ def main():
     )
     setattr(window, "name", "Better-Tools-Launcher")
     # 启动应用 - 正确的调用方式
-    webview.start(debug=not getattr(sys, "forzen", False))
+
+    logger.debug(not getattr(sys, "forzen", False))
+    webview.start(debug=not getattr(sys, "frozen", False))
 
 
 if __name__ == "__main__":
