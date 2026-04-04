@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 
 import requests
@@ -21,10 +22,12 @@ class UpdateManager:
         self.api_urls = [
             "https://irx999.fun/img/assets/Better-Tools/latest.json",
         ]
-        self.temp_dir = "./temp"
-        os.makedirs(self.temp_dir, exist_ok=True)
-        self.download_path = os.path.join(self.temp_dir, "update.zip")
-        self.extract_path = os.path.join(self.temp_dir, "extracted")
+        # 修改默认工作目录为 test_file/launcher
+        self.work_dir = "./test_file/launcher"
+        os.makedirs(self.work_dir, exist_ok=True)
+        self.download_path = os.path.join(self.work_dir, "update.zip")
+        self.extract_path = os.path.join(self.work_dir, "extracted")
+        self.target_dir = self.work_dir  # 目标目录设置为工作目录本身
         self.main_exe_name = "Better-Tools.exe"  # 主程序名称
         self.password = "123"  # 主程序密码
 
@@ -32,6 +35,17 @@ class UpdateManager:
         self.download_progress = 0
         self.extract_progress = 0
         self.current_status = "准备就绪"
+        # 添加状态历史记录
+        self.status_history = ["准备就绪"]
+
+    def add_status(self, status):
+        """添加状态到历史记录"""
+        self.current_status = status
+        self.status_history.append(status)
+
+    def get_status_history(self):
+        """获取状态历史记录"""
+        return self.status_history
 
     def get_release_info(self):
         """获取最新版本信息"""
@@ -72,7 +86,7 @@ class UpdateManager:
     def download_update(self, download_url):
         """下载更新文件并报告进度"""
         try:
-            self.current_status = "正在下载..."
+            self.add_status("正在下载...")
             logger.info(f"开始下载: {download_url}")
 
             response = requests.get(download_url, stream=True, timeout=30)
@@ -92,17 +106,20 @@ class UpdateManager:
                             )
 
             self.download_progress = 100
+            self.add_status("下载完成")
             logger.info("下载完成")
             return True
 
         except Exception as e:
-            logger.error(f"下载失败: {e}")
+            error_msg = f"下载失败: {e}"
+            self.add_status(error_msg)
+            logger.error(error_msg)
             return False
 
     def extract_update(self):
         """解压更新文件并报告进度"""
         try:
-            self.current_status = "正在解压..."
+            self.add_status("正在解压...")
             logger.info("开始解压...")
 
             # 清理之前的解压目录
@@ -112,11 +129,14 @@ class UpdateManager:
             # 解压文件
             shutil.unpack_archive(self.download_path, self.extract_path)
             self.extract_progress = 100
+            self.add_status("解压完成")
             logger.info("解压完成")
             return True
 
         except Exception as e:
-            logger.error(f"解压失败: {e}")
+            error_msg = f"解压失败: {e}"
+            self.add_status(error_msg)
+            logger.error(error_msg)
             return False
 
     def terminate_main_process(self):
@@ -142,17 +162,19 @@ class UpdateManager:
     def replace_files(self):
         """替换文件"""
         try:
-            self.current_status = "正在替换文件..."
+            self.add_status("正在替换文件...")
             logger.info("开始替换文件...")
 
             if not os.path.exists(self.extract_path):
-                logger.error("解压目录不存在")
+                error_msg = "解压目录不存在"
+                self.add_status(error_msg)
+                logger.error(error_msg)
                 return False
 
-            # 复制所有文件到当前目录
+            # 复制所有文件到目标目录（默认为当前目录）
             for item_name in os.listdir(self.extract_path):
                 source = os.path.join(self.extract_path, item_name)
-                target = os.path.join(os.getcwd(), item_name)
+                target = os.path.join(self.target_dir, item_name)
 
                 if os.path.isdir(source):
                     if os.path.exists(target):
@@ -163,18 +185,27 @@ class UpdateManager:
                         os.remove(target)
                     shutil.copy2(source, target)
 
+            self.add_status("文件替换完成")
             logger.info("文件替换完成")
             return True
 
         except Exception as e:
-            logger.error(f"文件替换失败: {e}")
+            error_msg = f"文件替换失败: {e}"
+            self.add_status(error_msg)
+            logger.error(error_msg)
             return False
 
     def cleanup(self):
         """清理临时文件"""
         try:
-            if os.path.exists(self.temp_dir):
-                shutil.rmtree(self.temp_dir)
+            if os.path.exists(self.work_dir):
+                # 只清理工作目录中的临时文件，保留目录结构
+                for item in os.listdir(self.work_dir):
+                    item_path = os.path.join(self.work_dir, item)
+                    if os.path.isfile(item_path):
+                        os.remove(item_path)
+                    elif os.path.isdir(item_path) and item != "extracted":
+                        shutil.rmtree(item_path)
                 logger.info("临时文件清理完成")
         except Exception as e:
             logger.error(f"清理失败: {e}")
@@ -211,6 +242,7 @@ class UpdaterAPI:
             "download_progress": self.update_manager.download_progress,
             "extract_progress": self.update_manager.extract_progress,
             "current_status": self.update_manager.current_status,
+            "status_history": self.update_manager.get_status_history(),
         }
 
     def check_and_update(self):
@@ -221,12 +253,12 @@ class UpdaterAPI:
                 # 获取版本信息
                 release_info = self.update_manager.get_release_info()
                 if not release_info:
-                    self.update_manager.current_status = "无法获取版本信息"
+                    self.update_manager.add_status("无法获取版本信息")
                     return
 
                 # 检查是否需要更新
                 if not self.update_manager.needs_update(release_info):
-                    self.update_manager.current_status = "已是最新版本"
+                    self.update_manager.add_status("已是最新版本")
                     # 直接启动主程序
                     self.update_manager.start_main_app()
                     return
@@ -235,21 +267,21 @@ class UpdaterAPI:
                 if "download_url" in release_info:
                     download_url = release_info["download_url"]
                 else:
-                    self.update_manager.current_status = "下载链接无效"
+                    self.update_manager.add_status("下载链接无效")
                     return
 
                 if not download_url:
-                    self.update_manager.current_status = "下载链接为空"
+                    self.update_manager.add_status("下载链接为空")
                     return
 
                 # 下载更新
                 if not self.update_manager.download_update(download_url):
-                    self.update_manager.current_status = "下载失败"
+                    self.update_manager.add_status("下载失败")
                     return
 
                 # 解压更新
                 if not self.update_manager.extract_update():
-                    self.update_manager.current_status = "解压失败"
+                    self.update_manager.add_status("解压失败")
                     return
 
                 # 终止主程序
@@ -257,18 +289,19 @@ class UpdaterAPI:
 
                 # 替换文件
                 if not self.update_manager.replace_files():
-                    self.update_manager.current_status = "文件替换失败"
+                    self.update_manager.add_status("文件替换失败")
                     return
 
                 # 清理
                 self.update_manager.cleanup()
 
                 # 完成
-                self.update_manager.current_status = "更新完成！点击启动按钮运行程序"
+                self.update_manager.add_status("更新完成！点击启动按钮运行程序")
 
             except Exception as e:
-                logger.error(f"更新过程出错: {e}")
-                self.update_manager.current_status = f"更新失败: {str(e)}"
+                error_msg = f"更新过程出错: {e}"
+                logger.error(error_msg)
+                self.update_manager.add_status(error_msg)
 
         self.update_thread = threading.Thread(target=update_process, daemon=True)
         self.update_thread.start()
@@ -279,11 +312,11 @@ class UpdaterAPI:
         success, message = self.update_manager.start_main_app()
         if success:
             logger.info("主程序启动成功")
-            self.update_manager.current_status = "启动成功"
+            self.update_manager.add_status("启动成功")
             return {"success": True, "message": message}
         else:
             logger.error("主程序启动失败")
-            self.update_manager.current_status = "启动失败"
+            self.update_manager.add_status("启动失败")
             return {"success": False, "message": message}
 
     def windows_destroy(self):
@@ -328,7 +361,7 @@ def main():
     )
     setattr(window, "name", "Better-Tools-Launcher")
     # 启动应用 - 正确的调用方式
-    webview.start(debug=False)
+    webview.start(debug=not getattr(sys, "forzen", False))
 
 
 if __name__ == "__main__":
