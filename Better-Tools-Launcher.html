@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -209,7 +209,7 @@
       <div class="progress-section">
         <div class="header">
           <h1>Better-Tools-Launcher</h1>
-          <p style="font-size: 14px; font-style: italic; color: #555; margin-top: 5px;">一键更新与管理工具集</p>
+          <p style="font-size: 12px; font-style: italic; color: #555; margin-top: 5px;">一键更新与管理工具集</p>
           <p id="install-path">
             当前安装目录：<span id="install-path-value">未选择</span>
           </p>
@@ -424,9 +424,6 @@
         statusItem.textContent = "正在启动主程序...";
         // 由于使用了 flex-direction: column-reverse，新元素会自动显示在底部
         statusContainer.appendChild(statusItem);
-
-        showLoading();
-
         pywebview.api
           .launch_app()
           .then((result) => {

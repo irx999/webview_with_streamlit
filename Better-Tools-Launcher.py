@@ -72,6 +72,8 @@ class UpdateManager:
         self.install_dir = new_install_dir
         os.makedirs(self.install_dir, exist_ok=True)
         self.target_dir = self.install_dir
+        # ????/????????????????????
+        self.set_work_dir(self.install_dir)
         return True
 
     def get_status_history(self):
@@ -244,31 +246,33 @@ class UpdateManager:
     def cleanup(self):
         """清理临时文件"""
         try:
-            if os.path.exists(self.work_dir):
-                # 只清理工作目录中的临时文件，保留目录结构
-                for item in os.listdir(self.work_dir):
-                    item_path = os.path.join(self.work_dir, item)
-                    if os.path.isfile(item_path):
-                        os.remove(item_path)
-                    elif (
-                        os.path.isdir(item_path) and item != "Better-Tools-Launcher.exe"
-                    ):
-                        shutil.rmtree(item_path)
-                logger.info("临时文件清理完成")
+            # ?????????? extracted ??
+            if os.path.exists(self.download_path):
+                os.remove(self.download_path)
+            if os.path.exists(self.extract_path):
+                shutil.rmtree(self.extract_path)
+            logger.info("临时文件清理完成")
         except Exception as e:
             logger.error(f"清理失败: {e}")
 
     def start_main_app(self):
         """启动主程序"""
         try:
-            main_exe = self.main_exe_name
+            if not self.install_dir or not os.path.isdir(self.install_dir):
+                error_msg = "请先选择安装目录"
+                logger.error(error_msg)
+                return False, error_msg
+            # 从用户选择的安装目录启动
+            main_exe = os.path.join(self.install_dir, self.main_exe_name)
             if os.path.exists(main_exe):
                 logger.info("启动主程序...")
                 # 使用 -s 参数和密码启动
-                subprocess.Popen([main_exe, "-s", self.password])
-                return True, "主程序启动成功"
+                subprocess.Popen(
+                    [main_exe, "-s", self.password], cwd=self.install_dir
+                )
+                return True, f"主程序启动成功: {main_exe}"
             else:
-                error_msg = "主程序不存在/或者当前是开发者模式"
+                error_msg = f"主程序不存在/或者当前是开发者模式: {main_exe}"
                 logger.error(error_msg)
                 return False, error_msg
         except Exception as e:
