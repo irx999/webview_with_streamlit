@@ -1,34 +1,28 @@
-"""
-配置信息读取与写入模块
+"""配置信息只读模块
 
-支持读取和写入 TOML 和 JSON 格式的配置文件，提供配置项的获取和管理功能。
+支持读取 TOML 和 JSON 格式的配置文件，提供配置项的获取和管理功能。
 """
 
 import datetime
-import json
 import os
-import tomllib
 from typing import Any, Dict
+
+from ._config_io import load_config_file
 
 
 class Config_reader:
-    """保留原有的 Config_reader 类以保持向后兼容性"""
+    """只读配置读取器，支持 TOML/JSON 与多候选路径回退。"""
 
     def __init__(self, filename: str | list[str]) -> None:
         """
-        初始化配置读取器
-
         Args:
-            filename (str | list[str]): 配置文件路径，可以是单个路径或路径列表（按顺序查找第一个存在的文件）
+            filename: 配置文件路径，单个路径或路径列表（按顺序找第一个存在的）。
+                列表中的 None 条目会被跳过。
         """
-
-        # 修改: 支持文件列表，按顺序查找第一个存在的文件
         if isinstance(filename, list):
-            found_file = None
-            for f in filename:
-                if os.path.exists(f):
-                    found_file = f
-                    break
+            found_file = next(
+                (f for f in filename if f is not None and os.path.exists(f)), None
+            )
             if found_file is None:
                 raise FileNotFoundError(
                     f"在列表 {filename} 中没有找到任何存在的配置文件"
@@ -36,7 +30,7 @@ class Config_reader:
             filename = found_file
 
         self.filename = filename
-        self.config = {}
+        self.config: dict = {}
         self.mtime = datetime.datetime.fromtimestamp(
             os.path.getmtime(filename)
         ).strftime("%Y-%m-%d %H:%M:%S")
@@ -44,71 +38,25 @@ class Config_reader:
         self.reload()
 
     def get(self, key: str, default: Any = None) -> Any:
-        """
-        获取配置项的值
-
-        Args:
-            key (str): 配置项键名
-            default (Any, optional): 默认值
-
-        Returns:
-            Any: 配置项的值或默认值
-        """
         self.reload()
         return self.config.get(key, default)
 
     def items(self):
-        """
-        获取所有配置项
-
-        Returns:
-            dict_items: 所有配置项的键值对
-        """
         return self.config.items()
 
     def __getitem__(self, key: str) -> Dict[str, Any] | Any:
-        """
-        通过索引获取配置项
-
-        Args:
-            key (str): 配置项键名
-
-        Returns:
-            Dict[str, Any]: 配置项的值
-
-        Raises:
-            KeyError: 当配置项不存在时抛出异常
-        """
-        try:
-            self.reload()
-            if key not in self.config:
-                raise KeyError(f"配置文件中没有找到 {key} 的配置")
-            return self.config[key]
-        except KeyError as e:
-            raise e
+        self.reload()
+        if key not in self.config:
+            raise KeyError(f"配置文件中没有找到 {key} 的配置")
+        return self.config[key]
 
     def __len__(self) -> int:
-        """
-        获取配置项数量
-
-        Returns:
-            int: 配置项数量
-        """
         self.reload()
         return len(self.config)
 
     def reload(self) -> None:
-        """重新加载配置文件"""
         try:
-            with open(self.filename, "rb") as f:
-                match self.filename.split(".")[-1]:
-                    case "toml":
-                        self.config = tomllib.load(f)
-                    case "json":
-                        self.config = json.load(f)
-                    case _:
-                        raise ValueError("不支持的配置文件格式")
-
+            self.config = load_config_file(self.filename)
         except FileNotFoundError:
             print(f"[ConfigReader] 警告：配置文件 {self.filename} 不存在！")
         except Exception as e:

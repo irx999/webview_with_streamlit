@@ -1,5 +1,21 @@
 import streamlit as st
 
+from src.app import App
+
+
+@st.fragment(run_every="2s")
+def _banner_carousel() -> None:
+    image_list = [
+        "./assets/images/Banner3-large-cn.png",
+        f"https://placehold.co/790x300/4CAF50/white?text={App.name}",
+        f"https://placehold.co/790x300/2196F3/white?text={App.version}",
+        f"https://placehold.co/790x300/FF9800/white?text={App.mtime}",
+    ]
+    idx = st.session_state.get("home_banner_idx", 0)
+    st.image(image_list[idx % len(image_list)], link="https://github.com/irx999")
+    st.session_state["home_banner_idx"] = idx + 1
+
+
 if __name__ == "__main__":
     st.container(height=200, border=False)
 
@@ -12,7 +28,8 @@ if __name__ == "__main__":
             horizontal_alignment="left",
             width=400,
         ):
-            carousel_container = st.empty()
+            _banner_carousel()
+
             # 三个公告tabs
             tab1, tab2, tab3, tab4 = st.tabs(["None", "None", "None", "None"])
 
@@ -42,21 +59,3 @@ if __name__ == "__main__":
                 - 数据导入指南
                 - 常见问题解答
                 """)
-
-            while True:
-                import time
-
-                from src.app import App
-
-                image_list = [
-                    "./assets/images/Banner3-large-cn.png",
-                    f"https://placehold.co/790x300/4CAF50/white?text={App.name}",
-                    f"https://placehold.co/790x300/2196F3/white?text={App.version}",
-                    f"https://placehold.co/790x300/FF9800/white?text={App.mtime}",
-                ]
-                for i, image_url in enumerate(image_list):
-                    # 显示图片
-                    carousel_container.image(
-                        image_url, link="https://github.com/irx999"
-                    )
-                    time.sleep(2)
