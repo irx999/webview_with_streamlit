@@ -5,13 +5,12 @@
 """
 
 import datetime
-import json
 import os
-import tomllib
 from typing import Any, Dict
 
-import tomli_w
 from loguru import logger
+
+from ._config_io import dump_config_file, load_config_file
 
 logger.add("logs/config.log", rotation="1 MB")
 
@@ -166,14 +165,7 @@ class ConfigManager:
         """重新加载配置文件"""
         try:
             if os.path.exists(self.filename):
-                with open(self.filename, "rb") as f:
-                    match self.filename.split(".")[-1]:
-                        case "toml":
-                            self.all_config = tomllib.load(f)
-                        case "json":
-                            self.all_config = json.load(f)
-                        case _:
-                            raise ValueError("不支持的配置文件格式")
+                self.all_config = load_config_file(self.filename)
             else:
                 # 如果文件不存在，初始化为空字典
                 self.all_config = {self.config_name: {}}
@@ -188,32 +180,7 @@ class ConfigManager:
         """保存配置到文件"""
         self.all_config.update({self.config_name: self.config})
         try:
-            # 确保目录存在
-            directory = os.path.dirname(self.filename)
-            if directory:
-                os.makedirs(directory, exist_ok=True)
-
-            file_ext = self.filename.split(".")[-1]
-
-            # 默认行为：全量覆盖写入 (适用于 JSON 或 更新失败的 TOML)
-            # 根据文件类型决定打开模式：toml 需要二进制模式 'wb'，json 需要文本模式 'w'
-            mode = "wb" if file_ext == "toml" else "w"
-
-            if mode == "wb":
-                with open(self.filename, mode) as f:
-                    match file_ext:
-                        case "toml":
-                            tomli_w.dump(self.all_config, f)  # type: ignore
-                        case _:
-                            raise ValueError(f"不支持的配置文件格式：.{file_ext}")
-            else:
-                with open(self.filename, mode, encoding="utf-8") as f:
-                    match file_ext:
-                        case "json":
-                            json.dump(self.all_config, f, indent=4, ensure_ascii=False)
-                        case _:
-                            raise ValueError(f"不支持的配置文件格式：.{file_ext}")
-
+            dump_config_file(self.filename, self.all_config)
             # 更新修改时间
             self.mtime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         except Exception as e:

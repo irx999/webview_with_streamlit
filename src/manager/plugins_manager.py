@@ -4,7 +4,6 @@ import shutil
 import sys
 import tempfile
 import zipfile
-from dataclasses import dataclass
 from pathlib import Path
 
 import requests
@@ -15,37 +14,39 @@ from src.utils import Config_reader
 logger.add("logs/ModulesMnager.log", format="{time} {level} {message}")
 
 
-@dataclass
-class Module_info:
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-        self.mtime = None
-        self.version = None
-        self.description = None
-        self.changelog = None
-
-
 class Plugins_Manager:
     """项目模块管理"""
 
     def __init__(self):
         pass
 
-    def load_plugins(self, plugin_dir="plugins"):
-        plugins_list = ["ps_of_py"]
+    def _plugin_roots(self, plugin_dir: str) -> list[Path]:
+        """返回所有可能存放插件的根目录（开发目录 + PyInstaller 解包目录）。"""
+        roots = [Path(plugin_dir)]
+        if hasattr(sys, "_MEIPASS"):
+            roots.append(Path(sys._MEIPASS) / plugin_dir)  # type: ignore[attr-defined]
+        return [r for r in roots if r.is_dir()]
 
-        plugins_dict = {}
+    def _discover_plugin_names(self, plugin_dir: str) -> list[str]:
+        """扫描根目录，返回包含 pyproject.toml 的子目录名。"""
+        names: dict[str, None] = {}  # 用 dict 保插入顺序去重
+        for root in self._plugin_roots(plugin_dir):
+            for entry in root.iterdir():
+                if entry.is_dir() and (entry / "pyproject.toml").is_file():
+                    names.setdefault(entry.name)
+        return list(names)
 
-        for plugin in plugins_list:
-            pyproject_toml = Config_reader(
-                [
-                    f"{plugin_dir}/{plugin}/pyproject.toml",
-                    f"{sys._MEIPASS}/{plugin_dir}/{plugin}/pyproject.toml"  # type: ignore
-                    if hasattr(sys, "_MEIPASS")
-                    else None,
-                ]
-            )
+    def load_plugins(self, plugin_dir: str = "plugins") -> dict[str, dict]:
+        plugins_dict: dict[str, dict] = {}
+
+        for plugin in self._discover_plugin_names(plugin_dir):
+            candidates = [f"{plugin_dir}/{plugin}/pyproject.toml"]
+            if hasattr(sys, "_MEIPASS"):
+                candidates.append(
+                    f"{sys._MEIPASS}/{plugin_dir}/{plugin}/pyproject.toml"  # type: ignore[attr-defined]
+                )
+
+            pyproject_toml = Config_reader(candidates)
             plugins_dict[plugin] = {
                 "icon": "🧩",
                 "name": pyproject_toml["project"]["name"],
