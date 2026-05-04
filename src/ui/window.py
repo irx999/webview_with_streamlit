@@ -106,8 +106,8 @@ def window_setting():
     ss["windows_height"] = windows_height
     c1[0].slider(
         "windows_w",
-        1200,
-        2560,
+        600,
+        3000,
         key="windows_width",
         step=100,
         on_change=set_window_size,
