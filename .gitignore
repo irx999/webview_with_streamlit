@@ -25,3 +25,6 @@ Better-Tools.exe
 
 
 test_file
+
+# 运行时数据：TinyDB / 登记记录 / 导出
+data/
