@@ -70,3 +70,11 @@ try:
 
 except ImportError as e:
     print(f"未找到插件{e}")
+
+try:
+    from plugins.preinstall_toolbox.src.ui import pages as preinstall_pages
+
+    PAGES |= preinstall_pages
+
+except ImportError as e:
+    print(f"未找到插件{e}")
