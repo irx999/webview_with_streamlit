@@ -63,10 +63,9 @@ PAGES: dict[str, list[Any]] = {
 }
 try:
     from plugins.ps_of_py.src.ui import pages as ps_of_py_pages
-    from plugins.shop.src.ui import pages as shop_pages
 
     PAGES |= ps_of_py_pages
-    PAGES |= shop_pages
+
 
 except ImportError as e:
     print(f"未找到插件{e}")
